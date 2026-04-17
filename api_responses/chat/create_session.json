@@ -1,0 +1,44 @@
+{
+    "api": "/chat/sessions",
+    "method": "POST",
+    "Description": "Create a new chat session",
+    "Auth": "JWT required for document and general modes. Guest token for triage mode only",
+    "Body": {
+        "report_id": "uuid (required for document mode)",
+        "mode": "document | general | triage"
+    },
+    "Response 201 (authenticated) ": {
+        "session_id": "uuid",
+        "mode": "string",
+        "language": "ar|en"
+    },
+    "Response 201 (guest triage)": {
+        "session_id": "uuid",
+        "guest_token": "uuid",
+        "mode": "triage",
+        "is_guest": true
+    },
+    "Response 400": {
+        "obj": {
+            "error": "report_id_required"
+        },
+        "data": "for document mode without report_id."
+    },
+    "Response 400 ": {
+        "obj": {
+            "error": "report_not_ready"
+        },
+        "data": "if report status = image_only — Flutter prompts user to upload text report."
+    },
+    "Response 403 ": {
+        "1": {
+            "error": "consent_required"
+        },
+        "2": {
+            "error": "demographics_required"
+        },
+        "3": {
+            "error": "login_required"
+        }
+    }
+}

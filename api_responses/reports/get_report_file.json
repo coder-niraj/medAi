@@ -1,0 +1,13 @@
+{
+    "api": " /reports/{report_id}/file",
+    "method": "GET",
+    "Description": "Returns short-lived signed URL for in-app document viewer. Writes AUDIT_LOG action=READ on every call.",
+    "Response 200": {
+        "url": "https://storage.googleapis.com/...",
+        "expires_at": "ISO8601",
+        "content_type": "application/pdf|image/jpeg|image/png",
+        "display_name": "string",
+        "is_image_only": "bool"
+    },
+    "Notes": "Signed URL valid 15 minutes only. For image_only reports, is_image_only = true — Flutter shows the image with a note 'This is your stored image. Upload the written radiologist report for AI explanation.'"
+}

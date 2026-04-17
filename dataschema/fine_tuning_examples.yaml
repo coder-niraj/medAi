@@ -1,0 +1,100 @@
+fine_tunning_examples:
+  - id:
+      - UUID
+      - PK
+  - source_session_id:
+      - UUID
+      - Source CHAT_SESSIONS.id.
+  - source_message_id:
+      - UUID
+      - Source CHAT_MESSAGES.id.
+  - source_report_type:
+      - VARCHAR
+      - expanded values matching REPORTS.report_type enum.
+      - none for triage/general.
+  - session_mode:
+      - ENUM
+      - document | general | triage
+  - system_prompt:
+      - TEXT
+      - Zone 1 system prompt variant used.
+  - report_context:
+      - TEXT
+      - Retrieved chunks, PHI stripped. NULL for triage/general.
+  - conversation_history:
+      - JSONB
+      - Prior turns, PHI stripped.
+  - user_question:
+      - TEXT
+      - PHI stripped.
+  - assistant_response:
+      - TEXT
+      - Final response delivered to patient.
+  - triage_result_level:
+      - ENUM
+      - nullable green | yellow | red. Only for triage sessions.
+  - interaction_language:
+      - VARCHAR
+      - ar | en | mixed
+  - question_category:
+      - VARCHAR
+      - Carried from CHAT_MESSAGES.
+  - report_panel:
+      - VARCHAR
+      - nullable Panel name from section_map. e.g. CBC, Lipid Panel.
+      - NULL for triage/general.
+  - age_range:
+      - VARCHAR
+      - nullable From PATIENT_DEMOGRAPHICS.
+      - NULL if no research consent.
+  - gender:
+      - VARCHAR
+      - nullable consent.
+      - From PATIENT_DEMOGRAPHICS.
+      - NULL if no research
+  - nationality:
+      - VARCHAR nullable
+      - From PATIENT_DEMOGRAPHICS.
+      - NULL if no research consent.
+  - document_quality:
+      - VARCHAR nullable
+      - From REPORTS.document_quality.
+      - NULL for general/triage.
+  - patient_rating:
+      - SMALLINT nullable
+      - Carried from CHAT_MESSAGES.
+  - guardrail_triggered:
+      - BOOLEAN Carried
+      - from CHAT_MESSAGES.
+  - clinician_validated:
+      - BOOLEAN
+      - Default FALSE.
+      - Set TRUE after CLINICIAN_REVIEWS
+      - confirms is_safe_to_train_on.
+  - clinician_rating:
+      - SMALLINT nullable
+      - Accuracy rating from CLINICIAN_REVIEWS.
+  - auto_quality_score:
+      - NUMERIC(3,2)
+      - Composite 0-1 score
+      - computed by nightly quality job.
+  - dataset_version:
+      - VARCHAR
+      - v1.0
+  - included_in_export:
+      - BOOLEAN
+      - Default FALSE.
+  - export_batch_id:
+      - UUID nullable
+      - Set when exported.
+  - phi_scan_passed:
+      - BOOLEAN
+      - Default FALSE.
+      - Set by nightly PHI detector job.
+      - No record exports if FALSE.
+  - phi_scan_at:
+      - TIMESTAMP nullable
+      - UTC.
+  - created_at:
+      - TIMESTAMP
+      - UTC.

@@ -1,0 +1,13 @@
+{
+    "api": "/internal/traces/{message_id}",
+    "method": "POST",
+    "Description": "Returns the LLM_TRACES row for a specific chat message. Admin role required. Used for debugging",
+    "Auth": "JWT with role = 'admin' or 'doctor'",
+    "Response 200": {
+        "trace object with all non-enc fields": "",
+        "plus decrypted assembled_prompt and raw_response for admin role": ""
+    },
+    "Response 404": {
+        "error": "trace_not_found"
+    }
+}

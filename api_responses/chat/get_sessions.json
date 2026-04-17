@@ -1,0 +1,21 @@
+{
+    "api": "/chat/sessions",
+    "method": "GET",
+    "Description": "List all chat sessions for authenticated user. Powers Chat History screen.",
+    "Query params": "mode: 'document'|'general'|'triage' (optional filter), limit: 20, offset: 0",
+    "Response 200 ": {
+        "sessions": [
+            {
+                "id": "",
+                "mode": "",
+                "title": "",
+                "report_id": "(nullable)",
+                "report_type": "(nullable)",
+                "triage_result": "(nullable)",
+                "message_count": "",
+                "last_message_at": "",
+                "language": ""
+            }
+        ]
+    }
+}

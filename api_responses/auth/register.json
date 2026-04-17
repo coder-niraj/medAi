@@ -1,0 +1,18 @@
+{
+    "api": " /auth/register",
+    "method": "POST",
+    "Description": "Create patient account after Firebase sign-up.",
+    "Body": {
+        "firebase_id_token": "string",
+        "name": "string",
+        "preferred_language": "ar|en",
+        "dob": "YYYY-MM-DD (optional)"
+    },
+    "Response 201": {
+        "user_id": "uuid"
+    },
+    "Response 409": {
+        "error": "email_exists"
+    },
+    "Notes": "consent_given_at is NOT set at registration. AI features blocked until ToS + Research Consent screens completed."
+}

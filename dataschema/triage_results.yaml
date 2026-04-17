@@ -1,0 +1,51 @@
+triage_results:
+  - id:
+      - UUID PK
+      - PHI: No
+  - session_id:
+      - UUID FK
+      - PHI: No
+      - References CHAT_SESSIONS.id. One-to-one.
+  - user_id:
+      - UUID FK nullable
+      - PHI: No
+      - NULL if guest triage. Set after POST /triage/claim.
+  - result_level:
+      - ENUM
+      - PHI: No
+      - green | yellow | red.
+      - Never downgraded by guardrail processing.
+  - urgency_score:
+      - SMALLINT
+      - PHI: No
+      - 1-10. Green = 1-3, Yellow = 4-6, Red = 7-10.
+  - result_summary_enc:
+      - TEXT
+      - PHI: High
+      - AES-256 encrypted. 2-3 sentence plain-language summary.
+  - result_recommendation_enc:
+      - TEXT
+      - PHI: High
+      - AES-256 encrypted. Actionable next step in patient's language.
+  - symptoms_reported_enc:
+      - TEXT
+      - PHI: High
+      - AES-256 encrypted.
+      - Structured symptom list extracted by Gemini at triage completion.
+  - result_language:
+      - VARCHAR
+      - PHI: No
+      - ar | en
+  - generated_at:
+      - TIMESTAMP
+      - PHI: No
+      - UTC.
+  - viewed_at:
+      - TIMESTAMP nullable
+      - PHI: No
+      - When patient first opened the Triage Result screen.
+  - patient_acted:
+      - ENUM nullable
+      - PHI: No
+      - sought_care | monitored_at_home | ignored | NULL.
+      - Populated 48hr after yellow/red via follow-up prompt.

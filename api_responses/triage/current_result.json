@@ -1,0 +1,24 @@
+{
+    "api": " /triage/complete/{session_id}",
+    "method": "POST",
+    "Description": "Trigger triage result generation.",
+    "Auth": "JWT or valid guest_token header.",
+    "Response 200": {
+        "triage_result_id": "uuid",
+        "result_level": "green | yellow | red",
+        "urgency_score": "1-10",
+        "summary": "string",
+        "recommendation": "string",
+        "language": "ar|en"
+    },
+    "Response 425": {
+        "obj": {
+            "error": "insufficient_turns"
+        },
+        "data": "fewer than 4 patient turns."
+    },
+    "Response 409": {
+        "error": "already_completed"
+    },
+    "Notes": "Writes to TRIAGE_RESULTS. Updates CHAT_SESSIONS.triage_status. Increments USERS.triage_count for authenticated users."
+}

@@ -1,0 +1,36 @@
+{
+    "api": "/reports/{report_id}/summary",
+    "method": "GET",
+    "Description": "Returns AI-generated structured summary. Panel-type-aware. Language matches user's preferred_language.",
+    "Response 200 (single panel)": {
+        "summary": "string",
+        "language": "ar|en",
+        "lab_values": [
+            {
+                "name": "",
+                "value": "",
+                "unit": "",
+                "flag": "",
+                "panel_name": ""
+            }
+        ],
+        "abnormal_count": "int",
+        "report_type": "string",
+        "report_subtype": "string",
+        "panel_specific_output": {}
+    },
+    "Response 200 (full_checkup)": {
+        "meta_summary": "string",
+        "panels_detected": [],
+        "overall_abnormal_count": "int",
+        "per_panel_summaries": {
+            "CBC": {},
+            "Lipid Panel": {}
+        },
+        "cardiac_urgency_flag": "bool",
+        "language": "ar|en"
+    },
+    "Response 425": {
+        "error": "processing_not_complete"
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "api": "/reports/{report_id}",
+    "method": "DELETE",
+    "Description": "Delete report and all associated data. PDPL right to erasure",
+    "Response 200": {
+        "deleted": true
+    },
+    "Notes": "Audit log rows retained. Embeddings, chunks, lab values, chat messages deleted. Cloud Storage object deleted including raw image files."
+}

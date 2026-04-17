@@ -1,0 +1,21 @@
+{
+    "Description": "Upload a medical document. Returns immediately with report_id. Processing happens asynchronously.",
+    "Content-Type": "multipart/form-data",
+    "Body": "file: binary (PDF|JPG|PNG, max 10MB), report_type: one of the 13 MVP types or 'imaging_report' | 'other', display_name: string (optional)",
+    "report_type values": " User selects from: 'cbc' | 'diabetes_panel' | 'lipid_panel' | 'vitamins_minerals' | 'thyroid' | 'lft' | 'kft' | 'urinalysis' | 'cardiac_enzymes' | 'hormones' | 'tumour_markers' | 'full_checkup' | 'prescription' | 'imaging_report' | 'other'",
+    "Response 202": {
+        "report_id": "uuid",
+        "status": "uploaded"
+    },
+    "Response 202 (image_only)": {
+        "report_id": "uuid",
+        "status": "image_only",
+        "message": "Image stored. Please also upload the written report from your radiologist for AI explanation."
+    },
+    "Response 400": {
+        "error": "invalid_file_type | file_too_large"
+    },
+    "Response 403": {
+        "error": "consent_required"
+    }
+}

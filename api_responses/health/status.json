@@ -1,0 +1,20 @@
+{
+    "api": "/health",
+    "method": "GET",
+    "note": "Unauthenticated health check endpoint for load balancer and monitoring.",
+    "Description": "Returns service health status. Checks DB connectivity, Vertex AI reachability, and Cloud Storage access.",
+    "auth": "None — unauthenticated.",
+    "Response 200": {
+        "status": "healthy",
+        "db": "ok",
+        "vertex_ai": "ok",
+        "storage": "ok",
+        "version": "string"
+    },
+    "Response 503": {
+        "status": "degraded",
+        "db": "ok|error",
+        "vertex_ai": "ok|error",
+        "storage": "ok|error"
+    }
+}

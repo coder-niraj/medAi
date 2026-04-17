@@ -1,0 +1,108 @@
+reports:
+    - id:
+          - UUID PK
+          - PHI: No
+          -
+    - user_id:
+          - UUID FK
+          - PHI: No
+          - References USERS.id. DELETE CASCADE
+    - file_url:
+          - TEXT
+          - PHI: No
+          - GCS URI: gs://bucket/{user_id}/{uuid}.
+          - Never original filename.
+    - display_name:
+          - Varchar
+          - PHI: No
+          - User-provided friendly name for vault display
+          - e.g. "CBC January 2025".
+          - Defaults to report_type + uploaded_at if not set
+    - ocr_text_enc:
+          - Text
+          - PHI: No
+          - Full OCR output. AES-256 encrypted.
+          - NULL for image_only reports
+    - summary_enc:
+          - Text
+          - PHI: No
+          - AES-256 encrypted
+          - AI-generated structured summary by panel type
+          - Generated on first chat or explicit summary request.
+    - report_type:
+          - Enum
+          - PHI: No
+          - ENUM values
+          - cbc | diabetes_panel | lipid_panel |
+          - vitamins_minerals | thyroid | lft | kft | urinalysis |
+          - cardiac_enzymes | hormones | "tumour_markers |
+          - full_checkup | prescription | imaging_report | other
+          - User selects at upload. Determines AI summary prompt template.
+    - report_subtype:
+          - Varchar
+          - PHI: No
+          - Auto-detected by OCR post-processing.
+          - More specific: e.g. cbc_with_differential, tft_with_antibodies, lipid_with_apob
+          - NULL if not determinable. Used for finetuning stratification
+    - detected_panels:
+          - JsonB
+          - PHI: No
+          - Array of panel names detected by PANEL_PATTERNS scan
+          - e.g. [CBC, Lipid Panel, LFTs, TFTs, HbA1c].
+          - Populated after OCR. Used to build panel tab bar in Flutter.
+    - panel_count:
+          - SmallINT
+          - PHI: No
+          - Number of distinct panels detected. > 1 triggers multi-panel
+          - chunking and per-panel summary strategy. = 1 for singlepanel reports.
+    - cardiac_urgency_flag:
+          - Varchar
+          - PHI: No
+          - Default FALSE. Set TRUE if any LAB_VALUES row for this
+          - report has test_category = "cardiac_enzymes" AND
+          - flag IN ("high","critical").
+          - Checked before every AI response for this report.
+    - detected_language:
+          - Varchar
+          - PHI: No
+          - ar | en | bilingual
+    - is_bilingual:
+          - Boolean
+          - PHI: No
+          - True if both Arabic and English detected in document
+    - report_language_mix:
+          - JsonB
+          - PHI: No
+          - "{ ar: 0.65, en: 0.35 }"
+          - character proportion by language
+    - status:
+          - Enum
+          - PHI: No
+          - uploaded | image_only | ocr_complete | ready | ocr_failed | embed_failed
+    - ocr_avg_confidence:
+          - Numeric
+          - PHI: No
+          - Average confidence across all OCR blocks.
+    - ocr_min_confidence:
+          - Numeric
+          - PHI: No
+          - Lowest confidence block — proxy for worst-case extraction quality
+    - document_quality:
+          - Enum
+          - PHI: No
+          - high (avg >= 0.90) | medium (0.75-0.89) | low (< 0.75).
+          - High = eligible for fine-tune training data.
+    - low_confidence_blocks:
+          - JsonB
+          - PHI: No
+          - Array of OCR blocks with confidence < 0.75.
+          - Flagged for review.
+    - uploaded_at:
+          - TimeStamp
+          - PHI: No
+          - UTC
+    - retention_expires_at:
+          - TimeStamp
+          - PHI No
+          - Auto-computed: uploaded_at + 2 years.
+          - Background job deletes when passed.

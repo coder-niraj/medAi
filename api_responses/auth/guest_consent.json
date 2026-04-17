@@ -1,0 +1,25 @@
+{
+    "api": "/auth/guest-consent",
+    "Description": "Record ToS acceptance for guest triage. Must be called before POST /chat/sessions in guest mode.",
+    "Auth": "None — unauthenticated.",
+    "Body": {
+        "tos_accepted": true,
+        "research_consent": "true-false",
+        "age_range": "string (required)",
+        "gender": "string (required)",
+        "nationality": "string (optional)"
+    },
+    "Response 200": {
+        "guest_token": "uuid",
+        "expires_at": "ISO8601"
+    },
+    "Response 400": {
+        "one": {
+            "error": "age_range_required"
+        },
+        "two": {
+            "error": "gender_required"
+        }
+    },
+    "Notes": "Creates GUEST_SESSIONS row. guest_token used for all subsequent guest API calls. age_range and gender are MANDATORY."
+}

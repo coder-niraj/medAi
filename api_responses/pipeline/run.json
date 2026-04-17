@@ -1,0 +1,9 @@
+{
+    "api": " /internal/ft-pipeline/run",
+    "method": "POST",
+    "Description": "Manually trigger the nightly fine-tune curation job. Admin role required",
+    "Response 200": {
+        "job_id": "uuid",
+        "started_at": "ISO8601"
+    }
+}

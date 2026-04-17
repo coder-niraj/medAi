@@ -1,0 +1,12 @@
+{
+    "api": " /users/me",
+    "method": "DELETE",
+    "Description": "Delete entire patient account and all PHI. PDPL right to erasure.",
+    "Response 200": {
+        "deleted": true,
+        "retained": [
+            "audit_log_entries"
+        ]
+    },
+    "Notes": "Audit log rows retained. FINE_TUNING_EXAMPLES rows where phi_scan_passed=TRUE retained but user_id linkage anonymized"
+}

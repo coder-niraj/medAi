@@ -1,0 +1,17 @@
+{
+    "api": "/triage/claim",
+    "method": "POST",
+    "Description": "Links completed guest triage session to newly registered user",
+    "Auth": "JWT (new user's token).",
+    "Body": {
+        "guest_token": "uuid"
+    },
+    "Response 200": {
+        "claimed": true,
+        "session_id": "uuid",
+        "triage_result_id": "uuid"
+    },
+    "Response 404": "guest_token not found or expired.",
+    "Response 409": "guest_token already claimed.",
+    "Notes": "Sets CHAT_SESSIONS.user_id, TRIAGE_RESULTS.user_id. Increments USERS.triage_count to 1. Guest token invalidated."
+}

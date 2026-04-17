@@ -1,0 +1,41 @@
+audit_hooks:
+  - id:
+      - UUID PK
+      - No
+  - user_id:
+      - UUID FK nullable
+      - No
+      - May be NULL for guest or system-initiated events.
+  - action:
+      - VARCHAR
+      - No
+      - UPLOAD | READ | CHAT_READ | DELETE |
+      - EXPORT | LOGIN | ADMIN_ACCESS |
+      - TRIAGE_COMPLETE | CONSENT_GIVEN |
+      - RESEARCH_CONSENT_CHANGED |
+      - CARDIAC_URGENCY_FLAGGED
+  - resource_type:
+      - VARCHAR
+      - No
+      - report | chat_message | lab_value |
+      - user_profile | triage_result
+  - resource_id:
+      - UUID
+      - No
+      - The specific row that was accessed.
+  - outcome:
+      - ENUM
+      - No
+      - SUCCESS | FAILURE
+  - ip_address_enc:
+      - TEXT
+      - Med
+      - AES-256 encrypted.
+  - user_agent:
+      - TEXT
+      - No
+      - Device/browser string.
+  - timestamp:
+      - TIMESTAMP
+      - No
+      - UTC, millisecond precision

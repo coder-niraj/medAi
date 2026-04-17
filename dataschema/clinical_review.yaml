@@ -1,0 +1,43 @@
+-id:
+- UUID PK
+-message_id:
+- UUID FK
+- References CHAT_MESSAGES.id.
+-reviewer_id:
+- UUID FK
+- References USERS.id. Must have role = "doctor".
+-accuracy_rating:
+- SMALLINT 
+- 1-5
+- 1 = dangerous, 
+- 3 = acceptable,
+- 5 = excellent.
+-safety_rating:
+- SMALLINT 
+- 1-5
+- 1 = unsafe, 
+- 5 = fully safe.
+-completeness_rating:
+- SMALLINT 
+- 1-5
+- 1 = missing key info
+- 5 = complete.
+-contains_error:
+- BOOLEAN Default
+- FALSE.
+-error_description:
+- TEXT nullable
+- What was wrong.
+-suggested_correction:
+- TEXT nullable
+- What the correct response would be.
+-is_safe_to_train_on:
+- BOOLEAN Final
+- call — written back to
+- FINE_TUNING_EXAMPLES.clinician_validated.
+-reviewed_at:
+- TIMESTAMP 
+- UTC
+-review_duration_sec:
+- INTEGER nullable
+- Quality signal — flag rushed reviews under 30 seconds.

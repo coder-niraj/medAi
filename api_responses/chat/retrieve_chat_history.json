@@ -1,0 +1,15 @@
+{
+    "api": "/chat/sessions/{session_id}/messages",
+    "method": "GET",
+    "Description": "Retrieve full chat history for a session.",
+    "Response 200": {
+        "messages": [
+            {
+                "id": "",
+                "role": "user|assistant",
+                "content": "string",
+                "created_at": ""
+            }
+        ]
+    }
+}

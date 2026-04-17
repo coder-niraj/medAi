@@ -1,0 +1,51 @@
+Guest_sessions:
+  - id:
+      - UUID PK
+      - PHI: No
+  - guest_token:
+      - Varchar
+      - PHI: No
+      - UUID token issued to Flutter. Stored in local storage.
+  - tos_accepted:
+      - Boolean
+      - PHI: No
+      - Must be TRUE before any AI call is processed.
+  - tos_accepted_at:
+      - TimeStamp
+      - PHI: No
+      - UTC. PDPL requires timestamped consent even for guests.
+  - research_consent:
+      - Boolean
+      - PHI: No
+      - Default FALSE. Carried over to
+      - PATIENT_DEMOGRAPHICS if guest registers.
+  - age_range:
+      - Varchar
+      - PHI: Med
+      - REQUIRED for guest triage.
+      - 18-25 | 26-35 | 36-45 | 46-55 | 56-65 | 65+
+      - Needed for MENA populationspecific lab reference range contex
+  - gender:
+      - Varchar
+      - PHI: Med
+      - REQUIRED for guest triage.
+      - male | female | prefer_not_to_say
+      - Needed for gender-specific reference
+      - ranges (Hb, hormones, iron)
+  - nationality:
+      - Varchar
+      - PHI: No
+      - Optional. ISO 3166-1 alpha-2
+  - claimed_user_id:
+      - UUID
+      - Set when the guest registers and claims this session via
+      - POST /triage/claim.
+
+  - expires_at:
+      - TimeStamp
+      - created_at + 24 hours.
+      - Background cleanup job deletes expired unclaimed rows
+  - created_at:
+      - TimeStamp
+      - PHI: No
+      - UTC

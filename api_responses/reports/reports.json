@@ -1,0 +1,24 @@
+{
+    "api": " /reports",
+    "method": "GET",
+    "Description": "List all reports for authenticated user. Powers My Health Documents vault.",
+    "Query params": "sort: 'newest' (default) | 'by_type', search: string (filters by display_name)",
+    "Response 200": {
+        "reports": [
+            {
+                "id": "",
+                "display_name": "",
+                "report_type": "",
+                "report_subtype": "",
+                "detected_panels": "",
+                "panel_count": "",
+                "status": "",
+                "document_quality": "",
+                "uploaded_at": "",
+                "abnormal_count": "",
+                "cardiac_urgency_flag": "",
+                "is_bilingual": ""
+            }
+        ]
+    }
+}

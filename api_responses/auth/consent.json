@@ -1,0 +1,14 @@
+{
+    "api": "/auth/consent",
+    "method": "POST",
+    "Description": "Record ToS acceptance and optional research consent for registered user",
+    "Auth": "JWT required.",
+    "Body": {
+        "tos_accepted": true,
+        "research_consent": "true-false"
+    },
+    "Response 200": {
+        "consent_given_at": "ISO8601"
+    },
+    "Notes": "Sets USERS.consent_given_at and research_consent. Creates PATIENT_DEMOGRAPHICS if research_consent=true. Writes AUDIT_LOG action=CONSENT_GIVEN."
+}

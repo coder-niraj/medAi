@@ -1,0 +1,23 @@
+{
+    "api": "/internal/ft-pipeline/stats",
+    "method": "GET",
+    "Description": "Returns fine-tuning dataset health metrics. Admin role required.",
+    "Response 200": {
+        "total_eligible": "int",
+        "arabic_clinician_validated": "int",
+        "research_consent_rate": "float",
+        "avg_patient_rating": "float",
+        "language_breakdown": {
+            "ar": "int",
+            "en": "int"
+        },
+        "triage_examples": "int",
+        "document_examples": "int",
+        "general_examples": "int",
+        "by_panel": {
+            "CBC": "int",
+            "diabetes_panel": "int"
+        },
+        "ready_for_export": "bool"
+    }
+}

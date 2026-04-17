@@ -1,0 +1,52 @@
+patient_demographics:
+  - id:
+      - UUID
+      - PK
+      - No
+  - user_id:
+      - UUID
+      - FK
+      - No
+      - References USERS.id. DELETE CASCADE.
+  - age_range:
+      - VARCHAR
+      - No
+      - 18-25 | 26-35 | 36-45 | 46-55 | 56-65 | 65+
+  - gender:
+      - VARCHAR
+      - No
+      - male | female | prefer_not_to_say
+  - nationality:
+      - VARCHAR
+      - No
+      - ISO 3166-1 alpha-2.
+  - region:
+      - VARCHAR
+      - No
+      - riyadh | jeddah | eastern_province |
+      - dubai | abu_dhabi | other
+  - health_literacy:
+      - VARCHAR
+      - No
+      - low | medium | high
+      - self-reported at onboarding.
+  - chronic_conditions:
+      - JSONB
+      - Med
+      - [diabetes, hypertension]
+      - patient self-report. Excluded
+      - from fine-tune exports independently.
+  - consent_for_research:
+      - BOOLEAN
+      - No
+      - Default FALSE. Must be TRUE for any data from this
+      - patient to enter FINE_TUNING_EXAMPLES.
+  - consent_given_at:
+      - TIMESTAMP nullable
+      - No
+      - UTC. PDPL requires separate timestamped consent for
+      - research use.
+  - created_at:
+      - TIMESTAMP
+      - No
+      - UTC.

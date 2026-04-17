@@ -1,0 +1,17 @@
+{
+    "api": " /triage/results",
+    "method": "GET",
+    "Description": "List all triage results for authenticated user",
+    "Response 200": {
+        "results": [
+            {
+                "triage_result_id": "",
+                "result_level": "",
+                "urgency_score": "",
+                "generated_at": "",
+                "session_id": "",
+                "result_summary_preview": "(first 80 chars)"
+            }
+        ]
+    }
+}

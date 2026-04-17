@@ -1,0 +1,16 @@
+{
+    "api": " /auth/login",
+    "method": "POST",
+    "Description": "Exchange Firebase ID token for platform JWT",
+    "Body": {
+        "firebase_id_token": "string"
+    },
+    "Response 200": {
+        "access_token": "string",
+        "user_id": "uuid",
+        "preferred_language": "ar|en",
+        "consent_given_at": "ISO8601|null",
+        "triage_count": "int"
+    },
+    "Notes ": "Flutter checks consent_given_at. If null, redirect to ToS screen"
+}

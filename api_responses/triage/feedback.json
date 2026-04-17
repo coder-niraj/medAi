@@ -1,0 +1,13 @@
+{
+    "api": "/chat/sessions/{session_id}/messages/{message_id}/feedback",
+    "method": "PATCH",
+    "Description": "Submit rating or flag for an AI response. Feeds FINE_TUNING_EXAMPLES pipeline.",
+    "body": {
+        "rating": "1-5 (optional)",
+        "flag": "'helpful'|'wrong'|'unsafe'|'too_vague'(optional)"
+    },
+    "Response 200": {
+        "recorded": true
+    },
+    "Notes": "Only permitted on role = 'assistant' messages. Rate-limited: 1 rating per message_id."
+}

@@ -1,0 +1,91 @@
+chat_messages:
+    - id:
+          - UUID PK
+          - PHI: No
+    - session_id:
+          - UUID FK
+          - PHI: No
+    - role:
+          - ENUM
+          - PHI: No
+          - user | assistant
+    - content_enc:
+          - TEXT
+          - PHI: High
+          - AES-256 encrypted message text.
+    - retrieved_chunk_ids:
+          - UUID[]
+          - PHI: No
+          - Array of EMBEDDINGS.id used for this response.
+          - NULL for triage/general.
+    - finish_reason:
+          - VARCHAR
+          - PHI: No
+          - STOP | MAX_TOKENS | SAFETY | GUARDRAIL_BLOCKED.
+          - Logged for monitoring.
+    - prompt_tokens:
+          - INTEGER
+          - PHI: No
+          - Token usage metrics for cost monitoring.
+    - completion_tokens:
+          - INTEGER
+          - PHI: No
+          - Token usage metrics for cost monitoring.
+    - patient_rating:
+          - SMALLINT nullable
+          - PHI: No
+          - 1-5 star rating from in-app feedback widget.
+    - patient_rating_at:
+          - TIMESTAMP
+          - nullable
+          - PHI: No
+          - When rated.
+    - user_feedback_flag:
+          - ENUM
+          - nullable
+          - PHI: No
+          - helpful | wrong | unsafe | too_vague
+    - guardrail_triggered:
+          - BOOLEAN
+          - PHI: No
+          - Default FALSE.
+          - TRUE if Layer 2 fired and replaced this response.
+    - guardrail_reason:
+          - VARCHAR nullable
+          - PHI: No
+          - finish_reason_safety | keyword_match |
+          - low_confidence_retrieval | triage_diagnosis_pattern |
+          - red_downgrade_attempt | cardiac_urgency_override | tumour_marker_disclaimer_missing
+    - fallback_used:
+          - BOOLEAN
+          - PHI: No
+          - Default FALSE.
+          - TRUE if pre-written safe fallback was returned.
+    - response_language:
+          - VARCHAR
+          - PHI: No
+          - ar | en
+    - question_language:
+          - VARCHAR
+          - PHI: No
+          - ar | en
+    - question_category:
+          - VARCHAR nullable
+          - PHI: No
+          - Auto-classified:
+                - lab_explanation | symptom_triage |
+                - trend | comparison | general | medication_query |
+                - panel_specific_query
+    - ft_eligible:
+          - BOOLEAN nullable
+          - PHI: No
+          - Computed nightly.
+          - TRUE if row meets quality bar for finetuning pipeline.
+    - ft_excluded_reason:
+          - VARCHAR nullable
+          - PHI: No
+          - Why excluded if ft_eligible = FALSE.
+    - created_at:
+          - TIMESTAMP
+          - PHI: No
+          - UTC. Millisecond precision.

@@ -1,0 +1,14 @@
+{
+    "api": "/triage/results/{triage_result_id}",
+    "method": "GET",
+    "Description": "Retrieve a specific triage result. Used to re-display from Chat History.",
+    "Response 200": {
+        "result_level": "green|yellow|red",
+        "urgency_score": "int",
+        "summary": "string",
+        "recommendation": "string",
+        "generated_at": "ISO8601",
+        "session_id": "uuid",
+        "language": "ar|en"
+    }
+}

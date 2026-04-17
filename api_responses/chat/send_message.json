@@ -1,0 +1,28 @@
+{
+    "api": "/chat/sessions/{session_id}/messages",
+    "method": "POST",
+    "Description": "Send a message and stream AI response via SSE",
+    "Auth": "JWT or guest token",
+    "Body": {
+        "message": "string"
+    },
+    "Response 200": {
+        "SSE stream": {
+            "data": {
+                "token": "partial_text"
+            }
+        },
+        "data": {
+            "done": true,
+            "finish_reason": "STOP",
+            "message_id": "uuid"
+        }
+    },
+    "Response 425": {
+        "error": "report_not_ready"
+    },
+    "Response 503": {
+        "error": "ai_service_unavailable"
+    },
+    "Notes": "question_category auto-classified and stored on message save. For reports with cardiac_urgency_flag = TRUE, every assistant response is checked for urgent evaluation notice (Layer 2 guardrail)."
+}

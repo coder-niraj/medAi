@@ -1,0 +1,14 @@
+# Core security files
+app/core/security/.env
+app/core/security/
+
+# Python Bytecode
+**/__pycache__/
+*.py[cod]
+
+# Virtual Environment (This stops the warnings)
+venv/
+app/venv/
+
+# Log files
+*.log

@@ -1,0 +1,62 @@
+chat_sessions:
+  - id:
+      - UUID PK
+      - PHI: No
+  - user_id:
+      - UUID FK nullable
+      - PHI: No
+      - NULL
+      - when is_guest = TRUE.
+  - report_id:
+      - UUID FK nullable
+      - PHI: No
+      - NULL for general and triage sessions.
+  - mode:
+      - ENUM
+      - PHI: No
+      - document | general | triage
+  - title:
+      - VARCHAR nullable
+      - PHI: No
+      - Auto-generated from first user message,
+      - truncated to 60 chars. Shown in Chat History screen.
+  - language:
+      - VARCHAR
+      - PHI: No
+      - ar | en.
+      - Controls Gemini response language for this session.
+  - is_guest:
+      - BOOLEAN
+      - PHI: No
+      - TRUE
+      - for
+      - first free triage session.
+  - guest_token:
+      - VARCHAR nullable
+      - PHI: No
+      - References
+      - GUEST_SESSIONS.guest_token.
+  - triage_status:
+      - ENUM
+      - nullable
+      - PHI: No
+      - in_progress | completed | abandoned.
+      - Only populated when mode = "triage".
+  - triage_result:
+      - ENUM nullable
+      - PHI: No
+      - green | yellow | red.
+      - Set when triage_status = completed.
+  - triage_completed_at:
+      - TIMESTAMP nullable
+      - PHI: No
+      - UTC.
+  - created_at:
+      - TIMESTAMP
+      - PHI: No
+      - UTC.
+  - last_message_at:
+      - TIMESTAMP
+      - PHI: No
+      - Updated on each new message.
+      - Used for idle timeout (30 days)

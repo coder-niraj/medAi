@@ -1,0 +1,35 @@
+embeddings:
+  - id:
+      - UUID PK
+      - PHI: No
+  - report_id:
+      - UUID FK
+      - PHI: No
+      - Scopes search to one patient's report.
+      - Never a global search.
+  - chunk_text:
+      - TEXT
+      - PHI: High
+      - Raw chunk text. AES-256 encrypted.
+  - embedding_vector:
+      - vector(768)
+      - PHI: Med
+      - Float[768] from text-multilingual-embedding-002.
+      - CMEK protected at DB level.
+  - chunk_index:
+      - INTEGER
+      - PHI: No
+      - Position in document.
+      - Preserves ordering for context reconstruction.
+  - section_name:
+      - VARCHAR
+      - PHI: No
+      - Panel name from section_map,
+      - e.g: CBC, Lipid Panel,TFTs.
+      - Injected into prompt as context label.
+      - Enables round-robin panel coverage retrieval for multi-panel reports.
+  - token_count:
+      - INTEGER
+      - PHI: No
+      - Actual token count.
+      - Target 400, max 440.

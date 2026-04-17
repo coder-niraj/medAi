@@ -1,0 +1,31 @@
+extension_hooks:
+  - id:
+      - UUID PK
+      - No
+  - user_id:
+      - UUID FK
+      - No
+      - References USERS.id. DELETE CASCADE.
+  - hook_name:
+      - VARCHAR UNIQUE
+      - No
+      - e.g:
+          - telemedicine_enabled,payment_gateway_url,
+          - whatsapp_followup_enabled
+  - hook_value:
+      - JSONB
+      - No
+      - Configuration payload. Schema depends on hook_name.
+  - is_active:
+      - BOOLEAN
+      - No
+      - Default FALSE.
+      - Feature flag — set TRUE to activate.
+  - created_at:
+      - TIMESTAMP
+      - No
+      - UTC.
+  - updated_at:
+      - TIMESTAMP
+      - No
+      - UTC

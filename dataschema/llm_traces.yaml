@@ -1,0 +1,146 @@
+llm_traaces:
+    - id:
+          - UUID PK
+          - PHI: No
+    - session_id:
+          - UUID FK nullable
+          - PHI: No
+          - References CHAT_SESSIONS.id. One-to-one.
+          - NULL for summary generation calls.
+    - message_id:
+          - UUID FK
+          - nullable
+          - PHI: No
+          - References CHAT_MESSAGES.id.
+          - NULL for triage completion and summary calls.
+    - report_id:
+          - UUID FK nullable
+          - PHI: No
+          - References REPORTS.id.
+          - NULL for triage and general mode.
+    - call_type:
+          - ENUM
+          - PHI: No
+          - chat | triage_completion | summary | embedding
+    - assembled_prompt_enc:
+          - TEXT
+          - PHI: High
+          - AES-256 encrypted. Full assembled prompt sent to Gemini
+          - all zones concatenated.
+          - Most important field for debugging.
+    - raw_response_enc:
+          - TEXT
+          - PHI: High
+          - AES-256 encrypted.
+          - Raw Gemini response before any guardrail processing.
+          - NULL if call failed before response.
+    - guardrail_fired:
+          - BOOLEAN
+          - PHI: No
+          - Default FALSE.
+          - TRUE if any Layer 2 check triggered on this call.
+    - guardrail_check:
+          - VARCHAR nullable
+          - PHI: No
+          - Which specific check fired:
+                - finish_reason_safety |
+                - keyword_match | cardiac_urgency_override |
+                - tumour_marker_disclaimer_missing |
+                - image_analysis_attempt | triage_diagnosis_pattern |
+                - red_downgrade_attempt
+    - guardrail_trigger_text_enc:
+          - TEXT nullable
+          - PHI: High
+          - AES-256 encrypted.
+          - The specific text that matched the guardrail pattern.
+          - Critical for debugging false positives.
+    - retrieved_chunk_ids:
+          - UUID[] nullable
+          - PHI: No
+          - Chunk IDs retrieved for this call.
+    - cosine_scores:
+          - FLOAT[] nullable
+          - PHI: No
+          - Cosine similarity scores for each retrieved chunk,
+          - in same order.
+    - panel_coverage:
+          - JSONB nullable
+          - PHI: No
+          - For multi-panel reports:
+                - which panels were represented.
+                - e.g: '{"CBC": 2, "Lipid Panel": 1}'
+    - zone1_tokens:
+          - INTEGER
+          - PHI: No
+          - Token count for Zone 1 (system prompt)
+    - zone2_tokens:
+          - INTEGER
+          - PHI: No
+          - Token
+          - count for Zone 2 (context/chunks).
+          - 0 for triage and general mode.
+    - zone3_tokens:
+          - INTEGER
+          - PHI: No
+          - Token
+          - count for Zone 3 (history).
+    - zone4_tokens:
+          - INTEGER
+          - PHI: No
+          - Token
+          - count for Zone 4 (user question).
+    - total_prompt_tokens:
+          - INTEGER
+          - PHI: No
+          - Total tokens sent.
+    - completion_tokens:
+          - INTEGER
+          - PHI: No
+          - Tokens in Gemini response.
+    - finish_reason:
+          - VARCHAR
+          - PHI: No
+          - STOP | MAX_TOKENS | SAFETY | ERROR
+    - ocr_duration_ms:
+          - INTEGER nullable
+          - PHI: No
+          - Milliseconds for OCR step.
+          - NULL if no OCR in this call chain.
+    - embedding_duration_ms:
+          - INTEGER nullable
+          - PHI: No
+          - Milliseconds for embedding step.
+    - retrieval_duration_ms:
+          - INTEGER nullable
+          - PHI: No
+          - Milliseconds for vector similarity search.
+    - llm_duration_ms:
+          - INTEGER
+          - PHI: No
+          - Milliseconds for the Gemini API call itself.
+    - total_duration_ms:
+          - INTEGER
+          - PHI: No
+          - End-to-end milliseconds from request received to response sent.
+    - model_version:
+          - VARCHAR
+          - PHI: No
+          - gemini-1.5-pro — stored explicitly for historical identification.
+    - temperature:
+          - NUMERIC(3,2)
+          - PHI: No
+          - 0.0 or 0.1
+          - stored per trace since triage uses 0.0 and chat uses 0.1.
+    - error_code:
+          - VARCHAR nullable
+          - PHI: No
+          - Vertex AI error code if call failed. NULL on success.
+    - error_message_enc:
+          - TEXT nullable
+          - PHI: No
+          - AES-256 encrypted error message.
+          - Encrypted because errors can contain prompt fragments.
+    - created_at:
+          - TIMESTAMP
+          - PHI: No
+          - UTC. Millisecond precision.
