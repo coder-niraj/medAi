@@ -5,7 +5,8 @@ Gender Range
 The MENA region stands for:
 Middle East and North Africa
 
-(AES-256)
+AES-256 encrypted
+HIPAA-listed identifier
 
 user 
 

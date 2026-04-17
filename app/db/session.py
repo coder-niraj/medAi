@@ -27,7 +27,7 @@ sessionLocal = sessionmaker(
 # Dependency
 def get_DB():
    db = sessionLocal()
-   print("database connected")
+   print("___________database connected_________")
    try:
     yield db
    finally:
