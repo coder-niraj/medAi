@@ -30,7 +30,7 @@ fast_app.add_middleware(
 )
 Base.metadata.create_all(bind=engine)
 
-# all Error Handlers Attetched
+# all Error Handlers attechment
 fast_app.add_exception_handler(RequestValidationError,
 validation_exception_handler # type: ignore[arg-type]
 )
