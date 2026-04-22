@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from app.db.base import Base
+from db.base import Base
 
 class ExtensionHook(Base):
     __tablename__ = "extension_hooks"

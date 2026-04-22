@@ -2,7 +2,7 @@ import uuid
 from sqlalchemy import Column, String, Text, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from pgvector.sqlalchemy import Vector # Requires pgvector python package
-from app.db.base import Base
+from db.base import Base
 
 class ReportEmbedding(Base):
     __tablename__ = "embeddings"

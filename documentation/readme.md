@@ -1,111 +1,287 @@
-Terms of Service TOS
-Consent
-Gender Range
 
-APIS
-Authentication
-POST /auth/register
-POST /auth/login
-POST /auth/consent
-POST /auth/guest-consent
+# Med AI
 
-Reports
-POST /reports/upload — Updated
-GET /reports
-GET /reports/{report_id}/summary
-GET /reports/{report_id}/file
-DELETE /reports/{report_id}
+The platform is purpose-built for the MENA region, with full RTL Arabic language support, compliance with Saudi Arabia's
+PDPL and the UAE Federal Decree-Law No. 45 of 2021, and data residency within Google Cloud's Dammam region (mecentral2) for KSA patients
 
-Chat
-POST /chat/sessions
-GET /chat/sessions
-POST /chat/sessions/{session_id}/messages
-GET /chat/sessions/{session_id}/messages
 
-Triage
-POST /triage/complete/{session_id}
-POST /triage/claim
-GET /triage/results/{triage_result_id}
-GET /triage/results
-PATCH /chat/sessions/{session_id}/messages/{message_id}/feedback
+## API Reference
 
-User Data (PDPL Compliance)
-GET /users/me/data-export
-DELETE /users/me
+### Auth 
 
-Internal Fine-Tuning Endpoints (Admin Only)
-POST /internal/ft-pipeline/run
-GET /internal/ft-pipeline/stats
+#### Register
 
-Health Status + LLM Traces Endpoints
-GET /health
-GET /internal/traces/{message_id}
+```http
+  POST /auth/register
+```
 
-The MENA region stands for:
-Middle East and North Africa
+| Parameter | Type     | Description                |
+| :-------- | :------- | :------------------------- |
+| `api_key` | `string` | **Required**. Your API key |
 
-AES-256 encrypted
-HIPAA-listed identifier
+###
+#### Login
 
-user
+```http
+  POST /auth/login
+```
 
-id uuid
-name str
-email_encryoted str
-phone_encrypted str
-dob_encrypted str
-prefered_language str
-role enum
-firebase_uid str
-created_at date
-consent_given_at timstamp
-research_consent boolean
-triage_count integer
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
 
-guest
 
-id uuid
-guest_token str
-tos_accepted boolean
-research_consent boolean
-age_range str
-tos_accepted_At timestamp
-gender str
-nationality str
-claimed_user_id uuid
-created_at timestamp
-expires_at timestamp
+###
+#### Consent
 
-1. Why do we need Triage Result endpoints?
-   You are right that the Chat Sessions endpoints manage the back-and-forth conversation. However, Triage Results are distinct for several structural and clinical reasons:
+```http
+  POST /auth/consent
+```
 
-Finality & Persistence: A chat session is an ongoing stream of messages. A TriageResult is a finalized, structured record generated only after a session is complete. It stores the high-level medical outcome (Green/Yellow/Red status and urgency score) that the app needs to display on a specialized "Result Screen"
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
 
-Data Structure: GET /triage/results/{id} returns specific fields that aren't in a standard chat message, such as urgency_score, symptoms_reported_enc (a summarized list of symptoms), and result_recommendation_enc
 
-Unauthenticated Access (Guest Mode): The first triage session can be done by a guest. The system needs a way to store that specific result so a user can "claim" it later if they decide to create an account.
+###
+#### Guest Consent
 
-Safety Tracking: The triage_result is used for follow-up. For example, 48 hours after a "Red" or "Yellow" result, the system uses this record to trigger a push notification asking if the patient sought care.
+```http
+  POST /auth/guest-consent
+```
 
-2. The Nightly Pipeline
-   The nightly pipeline is a set of automated background jobs that handle data cleanup and AI improvements. It includes:
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
 
-Fine-tuning Curation (2 AM UTC): The system scans messages that are "eligible" for training (e.g., high-quality interactions where the user gave a good rating). It strips out Personal Health Information (PHI) and moves the data to a FINE_TUNING_EXAMPLES table to improve the AI's future accuracy.
 
-Guest Session Cleanup (Every 6 hours): Deletes guest sessions and chats that are older than 24 hours and were never claimed by a registered user
 
-Document Retention (3 AM UTC): Deletes medical reports and their associated embeddings after 2 years to comply with data privacy regulations.
+### Reports
 
-Trace Retention (4 AM UTC): Since LLM traces are high-volume, the pipeline deletes the detailed prompt/response text after 90 days but keeps the metadata (like token counts) for long-term cost analysis.
+ #### Upload Documents
 
-3. What are LLM Traces?A Trace is a detailed log of a single "thought" or interaction by the AI. Every time the app calls the Gemini API, a row is written to the LLM_TRACES table. It is the primary tool for debugging and safety.
+```http
+  POST /reports/upload
+```
 
-The Full Prompt: Exactly what text was sent to the AI, including the hidden system instructions and any retrieved document chunks.
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
 
-The Raw Response: What the AI said before the safety guardrails checked it.
+###
+ #### List Of Reports
 
-Guardrail Outcomes: Whether a safety filter (like the "cardiac urgency" check) was triggered to change the AI's answer.
+```http
+  GET /reports
+```
 
-Performance Data: How many tokens were used (for cost tracking) and how many milliseconds the AI took to respond.
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
 
-Retrieval Metadata: In document chats, it records exactly which pieces of the medical report the AI "looked at" (chunk IDs and cosine similarity scores) to generate the answer.
+###
+#### AI Report Summary
+
+```http
+  GET /reports/{report_id}/summary
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+###
+#### Accesible Limited Time URL
+
+```http
+  GET /reports/{report_id}/file
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+###
+ #### Delete Report
+
+```http
+  DELETE /reports/{report_id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+
+### Chat
+
+ #### Create Chat Session
+
+```http
+  POST /chat/sessions
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+ #### List All Sessions
+
+```http
+  GET /chat/sessions
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+###
+ #### Send Chat Message
+
+```http
+  POST /chat/sessions/{session_id}/messages
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+###
+ #### Retrive Chat Session History
+
+```http
+  GET /chat/sessions/{session_id}/messages
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+
+
+### Triage
+
+ #### Trigger Triage Result Generation
+
+```http
+  POST /triage/complete/{session_id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+ #### Link Guest Triage To Newly registered User
+
+```http
+  POST /triage/claim
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+ #### Retrive Specific Triage Result
+
+```http
+  GET /triage/results/{triage_result_id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+ #### List All Triage Results
+
+```http
+  GET /triage/results
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+ #### Rating And FeedBack
+
+```http
+  Patch /chat/sessions/{session_id}/messages/{message_id}/feedback
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+
+### User
+
+ #### Export All Data for Authenticated User
+
+```http
+  GET /users/me/data-export
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+
+ #### Delete Entire Patient Account
+
+```http
+  DELETE /users/me
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+
+### Internal (Admin Only)
+
+ #### Triogger Nightly PipeLine
+
+```http
+  POST /internal/ft-pipeline/run
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+
+
+ #### Fine Tuning Dataset Health Check
+
+```http
+  GET /internal/ft-pipeline/stats
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+
+
+### Health Status + LLM Traces Endpoints
+
+ #### Service Health Status
+
+```http
+  GET /health
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###
+
+
+ #### LLM Traces 
+
+```http
+  GET /internal/traces/{message_id}
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `id`      | `string` | **Required**. Id of item to fetch |
+###

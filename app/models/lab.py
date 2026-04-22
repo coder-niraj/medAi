@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy import Column, String, Numeric, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from app.db.base import Base
+from db.base import Base
 
 class LabValue(Base):
     __tablename__ = "lab_values"

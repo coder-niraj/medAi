@@ -14,7 +14,6 @@ print(f"DEBUG: Does file exist? {os.path.exists(ENV_PATH)}")
 
 load_dotenv(dotenv_path=ENV_PATH)
 DB_url = os.getenv("DATABASE_URL")
-
 engine = create_engine(
         DB_url, # type: ignore
         pool_pre_ping=True

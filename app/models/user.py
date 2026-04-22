@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, Integer, Enum, Date
 from sqlalchemy.dialects.postgresql import UUID
-from app.db.base import Base
+from db.base import Base
 
 
 class User(Base):
@@ -14,19 +14,19 @@ class User(Base):
 
     email_enc = Column(String, nullable=False)
     phone_enc = Column(String, nullable=True)
-    dob_enc = Column(Date, nullable=True)
-
+    dob_enc = Column(String, nullable=True)
     preferred_language = Column(String(10), nullable=False, default="en")
-
     role = Column(
         Enum("patient", "doctor", "admin", name="role_enum"),
         nullable=False,
-        default="patient"
+        default="patient",
     )
 
     firebase_uid = Column(String(255), unique=True, index=True, nullable=False)
 
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=datetime.utcnow, nullable=False
+    )
 
     consent_given_at = Column(DateTime(timezone=True), nullable=True)
 

@@ -1,7 +1,7 @@
 # Core security files
 app/core/security/.env
 app/core/security/
-
+documentation/
 # Python Bytecode
 **/__pycache__/
 *.py[cod]
@@ -12,3 +12,4 @@ app/venv/
 
 # Log files
 *.log
+.vscode

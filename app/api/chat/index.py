@@ -3,7 +3,7 @@ class ChatController :
       return "post session"
 
     def get_sessions():
-      return "get session"
+      return "get session hes"
 
     def get_session_messages():
       return "get session all messages"

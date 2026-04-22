@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.internal.index import InternalController
+from api.internal.index import InternalController
 router = APIRouter(prefix="/internal")
 
 router.delete("/traces/{message_id}")(InternalController.llm_traces)

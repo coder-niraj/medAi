@@ -1,53 +1,53 @@
 Users:
-      - id:
-              - UUID
-              - PHI: No
-              - Primary key. Generated server-side.
-      - name:
-              - Varchar
-              - PHI: Med
-              - Display name. DB-level encryption via CMEK
-      - email_enc:
-              - Text
-              - PHI: High
-              - AES-256 encrypted. Used for auth lookup via Firebase Auth UID
-      - phone_enc:
-              - Text
-              - PHI: High
-              - AES-256 encrypted. Optional.
-      - dob_enc:
-              - Date
-              - PHI: High
-              - AES-256 encrypted. HIPAA-listed identifier
-      - prefered_language:
-              - varchar
-              - PHI: No
-              - ar or en. Controls AI response language
-      - role:
-              - Enum
-              - PHI: No
-              - patient | doctor | admin
-      - firebase_uid:
-              - varchar
-              - PHI: No
-              - Links to Firebase Auth. Not PHI.
-      - created_at:
-              - TimeStamp
-              - PHI: No
-              - UTC. Set on INSERT, never updated
-      - consent_given_at:
-              - TimeStamp
-              - PHI: No
-              - PDPL requires timestamped ToS consent. NULL until accepted. AI
-                features blocked if NULL.
-      - research_consent:
-              - Boolean
-              - PHI: No
-              - Default FALSE. Must be TRUE for data to enter
-                FINE_TUNING_EXAMPLES. Can be toggled in Settings
-      - triage_count:
-              - Integer
-              - PHI: No
-              - Default 0. Incremented on each completed triage session.
-              - When = 0 first triage allowed as guest.
-              - When >= 1 login required before new triage.
+  - id:
+      - UUID
+      - PHI: No
+      - Primary key. Generated server-side.
+  - name:
+      - Varchar
+      - PHI: Med
+      - Display name. DB-level encryption via CMEK
+  - email_enc:
+      - Text
+      - PHI: High
+      - AES-256 encrypted. Used for auth lookup via Firebase Auth UID
+  - phone_enc:
+      - Text
+      - PHI: High
+      - AES-256 encrypted. Optional.
+  - dob_enc:
+      - Date
+      - PHI: High
+      - AES-256 encrypted. HIPAA-listed identifier
+  - preferred_language:
+      - varchar
+      - PHI: No
+      - ar or en. Controls AI response language
+  - role:
+      - Enum
+      - PHI: No
+      - patient | doctor | admin
+  - firebase_uid:
+      - varchar
+      - PHI: No
+      - Links to Firebase Auth. Not PHI.
+  - created_at:
+      - TimeStamp
+      - PHI: No
+      - UTC. Set on INSERT, never updated
+  - consent_given_at:
+      - TimeStamp
+      - PHI: No
+      - PDPL requires timestamped ToS consent. NULL until accepted. AI features
+        blocked if NULL.
+  - research_consent:
+      - Boolean
+      - PHI: No
+      - Default FALSE. Must be TRUE for data to enter FINE_TUNING_EXAMPLES. Can
+        be toggled in Settings
+  - triage_count:
+      - Integer
+      - PHI: No
+      - Default 0. Incremented on each completed triage session.
+      - When = 0 first triage allowed as guest.
+      - When >= 1 login required before new triage.

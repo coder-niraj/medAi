@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, Boolean, Integer, Enum, ForeignKey, Text, Numeric, Float
 from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
-from app.db.base import Base
+from db.base import Base
 
 class LLMTrace(Base):
     __tablename__ = "llm_traces"

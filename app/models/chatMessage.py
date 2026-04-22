@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, Boolean, Integer, Enum, ForeignKey, Text, SmallInteger
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from app.db.base import Base
+from db.base import Base
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"

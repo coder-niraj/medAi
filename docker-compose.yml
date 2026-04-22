@@ -1,0 +1,36 @@
+services:
+  api:
+    build: ./app
+    container_name: med_ai_backend
+    volumes:
+      - ./app:/app
+    command: uvicorn main:fast_app --host 0.0.0.0 --port 3001 --reload --reload-dir /app --reload-include '*.py' --reload-exclude 'venv/*'
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./app/core/security/.env
+    depends_on:
+      - db  # <--- Tells Docker to start the database first
+
+
+  db:
+    image: ankane/pgvector:v0.5.1
+    container_name: med_ai_db
+    environment:
+      - POSTGRES_USER=niraj
+      - POSTGRES_PASSWORD=securepassword
+      - POSTGRES_DB=medical_ai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: med_ai_pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"  # This means you will go to localhost:5050 in your browser
+    depends_on:
+      - db
+volumes:
+  postgres_data:

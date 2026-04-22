@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.triage.index import TriageController
+from api.triage.index import TriageController
 
 router = APIRouter(prefix="/triage")
 

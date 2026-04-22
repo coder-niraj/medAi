@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import Column, String, DateTime, Boolean, Integer, Enum, ForeignKey, Text, SmallInteger, Numeric
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from app.db.base import Base
+from db.base import Base
 
 class Report(Base):
     __tablename__ = "reports"

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey, Text, SmallInteger, Numeric
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from app.db.base import Base
+from db.base import Base
 
 class FineTuningExample(Base):
     __tablename__ = "fine_tuning_examples"

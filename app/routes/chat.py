@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.chat.index import ChatController
+from api.chat.index import ChatController
 router = APIRouter(prefix="/chat")
 
 router.post("/sessions")(ChatController.post_sessions)
