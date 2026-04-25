@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from google.cloud import storage
 
@@ -58,6 +59,37 @@ class StorageManager:
     def list_files(self):
         blobs = self.client.list_blobs(self.bucket_name)
         return [blob.name for blob in blobs]
+
+    def get_short_lived_url(self, blob_name: str, expires_in_hours: int = 24):
+        blob = self.bucket.blob(blob_name)
+        try:
+            # CRITICAL: This fetches the actual metadata (content_type, size, etc.)
+            blob.reload()
+            content_type = blob.content_type
+        except Exception:
+            content_type = None
+
+        # Fallback if the emulator is being stubborn
+        if not content_type:
+            # Senior move: guess by extension if metadata is missing
+            import mimetypes
+
+            content_type, _ = mimetypes.guess_type(blob_name)
+            content_type = content_type or "application/octet-stream"
+
+        if os.getenv("STORAGE_EMULATOR_HOST"):
+            url = f"{os.getenv('STORAGE_EMULATOR_HOST')}/download/storage/v1/b/{self.bucket_name}/o/{blob_name}?alt=media"
+        else:
+            url = blob.generate_signed_url(
+                version="v4",
+                expiration=timedelta(hours=expires_in_hours),
+                method="GET",
+            )
+
+        return {
+            "url": url,
+            "content_type": content_type,
+        }
 
 
 storage_manager = StorageManager()

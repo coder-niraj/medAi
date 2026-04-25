@@ -1,13 +1,15 @@
 from datetime import datetime
 from os import name
 import uuid
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from sympy import true
+from helpers.audit import set_audit_state
+from helpers.error_management import msg
 from models import triage
 from models.user import User
 from models.patient import PatientDemographics
-from schemas.userSchema import ResearchConsent, UserCreate, UserDemoGraphics
+from schemas.userSchema import ResearchConsent, UserCreate, UserDemographics
 from helpers.AES import AES256Service
 
 
@@ -26,25 +28,101 @@ class UserRepo:
         else:
             return True
 
-    def create_user_demographics(self, petient_data: UserDemoGraphics, user_id):
+    def create_user_demographics(
+        self, request: Request, patient_data: UserDemographics, user_id
+    ) -> dict[str, str]:
+
+        # Check user exists
         user_data = self.db.query(User).filter(User.id == user_id).first()
+
+        if not user_data:
+
+            set_audit_state(
+                request,
+                action="RESEARCH_CONSENT_CHANGED",
+                resource_type="user_profile",
+                outcome="FAILURE",
+                resource_id=None,
+            )
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "message_ar": msg("errors", "user_not_found", "ar"),
+                    "message_en": msg("errors", "user_not_found", "en"),
+                },
+            )
+
+        # Check research consent
+        if not user_data.research_consent:
+
+            set_audit_state(
+                request,
+                action="RESEARCH_CONSENT_CHANGED",
+                resource_type="user_profile",
+                outcome="FAILURE",
+                resource_id=user_data.id,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "message_ar": msg("errors", "research_consent_required", "ar"),
+                    "message_en": msg("errors", "research_consent_required", "en"),
+                },
+            )
+
+        # Check if demographics already exists
+        existing = (
+            self.db.query(PatientDemographics)
+            .filter(PatientDemographics.user_id == user_id)
+            .first()
+        )
+
+        if existing:
+            # UPDATE existing row
+            existing.age_range = patient_data.age_range
+            existing.gender = patient_data.gender
+            existing.nationality = patient_data.nationality
+            existing.region = patient_data.region
+            existing.health_literacy = patient_data.health_literacy
+            existing.chronic_conditions = patient_data.chronic_conditions
+            self.db.commit()
+            self.db.refresh(existing)
+
+            set_audit_state(
+                request,
+                action="RESEARCH_CONSENT_CHANGED",
+                resource_type="user_profile",
+                outcome="SUCCESS",
+                resource_id=existing.id,
+            )
+            return {"demographics": "updated"}
+
+        # CREATE new row
         demo_graphic_data = PatientDemographics(
             id=uuid.uuid4(),
             user_id=user_data.id,
-            age_range=petient_data.age_range,
-            gender=petient_data.gender,
-            nationality=petient_data.nationality,
-            region=petient_data.region,
-            health_literacy=petient_data.health_literacy,
-            chronic_conditions=petient_data.chronic_conditions,
+            age_range=patient_data.age_range,
+            gender=patient_data.gender,
+            nationality=patient_data.nationality,
+            region=patient_data.region,
+            health_literacy=patient_data.health_literacy,
+            chronic_conditions=patient_data.chronic_conditions,
             consent_for_research=user_data.research_consent,
-            consent_given_at=user_data.consent_given_at,
+            consent_given_at=datetime.utcnow(),
             created_at=datetime.utcnow(),
         )
         self.db.add(demo_graphic_data)
         self.db.commit()
         self.db.refresh(demo_graphic_data)
-        return {"demo_graphic": "updated"}
+
+        set_audit_state(
+            request,
+            action="RESEARCH_CONSENT_CHANGED",
+            resource_type="user_profile",
+            outcome="SUCCESS",
+            resource_id=demo_graphic_data.id,
+        )
+        return {"demographics": "created"}
 
     def create_user(self, firebase_uid: str, firbase_email: str, user_dto: UserCreate):
         try:
@@ -72,7 +150,13 @@ class UserRepo:
             self.db.rollback()
             # Log error here
             print(e)
-            raise HTTPException(status_code=500, detail="Database transaction failed")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message_ar": msg("errors", "db_failed", "ar"),
+                    "message_en": msg("errors", "db_failed", "en"),
+                },
+            )
 
     def get_user_by_firebase_uid(self, firebase_uid):
         return self.db.query(User).filter(User.firebase_uid == firebase_uid).first()
@@ -96,7 +180,7 @@ class UserRepo:
     def update_consent_ToS(self, research_consent, user_id, phone):
         try:
             dateTimeGiven = datetime.utcnow()
-            phone_enc = AES256Service.encrypt(phone)
+            phone_enc = AES256Service.encrypt(phone) if phone else None
 
             result = (
                 self.db.query(User)
@@ -113,12 +197,20 @@ class UserRepo:
             self.db.commit()
             if result == 0:
                 print(result)
-                return {"result": False, "Message": "User not found"}
+                return {
+                    "result": False,
+                    "Message_ar": msg("errors", "user_not_found", "ar"),
+                    "Message_en": msg("errors", "user_not_found", "en"),
+                }
             return {"result": True, "consent_given_at": dateTimeGiven}
         except Exception as e:
             self.db.rollback()
             print("error", e)
-            return {"result": False, "Message": "Operation failed"}
+            return {
+                "result": False,
+                "Message_ar": msg("errors", "operation_failed", "ar"),
+                "Message_en": msg("errors", "operation_failed", "en"),
+            }
 
     # def update_user(self,user_id):
     #     print("user consent accepted")

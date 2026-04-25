@@ -45,6 +45,3 @@ class GuestSession(Base):
         nullable=False,
         index=True,  # Indexed for the background cleanup job
     )
-
-    def __repr__(self):
-        return f"<GuestSession(id={self.id}, token={self.guest_token}, claimed={self.claimed_user_id})>"

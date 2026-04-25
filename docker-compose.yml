@@ -10,27 +10,63 @@ services:
     env_file:
       - ./app/core/security/.env
     depends_on:
-      - db  # <--- Tells Docker to start the database first
-
+      - db
+      - pubsub
+      - storage
+    environment:
+      - DATABASE_URL=postgresql://postgres:svipl@db:5432/med_ai_db
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+      - STORAGE_EMULATOR_HOST=http://storage:8000
 
   db:
     image: ankane/pgvector:v0.5.1
     container_name: med_ai_db
     environment:
-      - POSTGRES_USER=niraj
-      - POSTGRES_PASSWORD=securepassword
-      - POSTGRES_DB=medical_ai
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=svipl
+      - POSTGRES_DB=med_ai_db
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: med_ai_pgadmin
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
+
+  adminer:
+    image: adminer
+    container_name: medai-adminer
     ports:
-      - "5050:80"  # This means you will go to localhost:5050 in your browser
+      - "8080:8080"
     depends_on:
       - db
+
+  storage:
+    image: fsouza/fake-gcs-server
+    container_name: medai-storage
+    ports:
+      - "8000:8000"
+    command: -scheme http -port 8000 -public-host storage:8000
+    volumes:
+      - gcs_data:/data
+
+  pubsub_ui:
+    image: ghcr.io/drehelis/gcp-emulator-ui:main
+    container_name: medai-pubsub_ui
+    ports:
+      - "8086:8085"
+      - "8087:8086"
+
+  pubsub:
+    image: google/cloud-sdk:latest
+    container_name: medai-pubsub
+    command: >
+      bash -c "
+      apt-get update &&
+      apt-get install -y openjdk-17-jre &&
+      gcloud beta emulators pubsub start
+      --host-port=0.0.0.0:8085
+      --project=med-ai-project
+      "
+    ports:
+      - "8085:8085"
 volumes:
   postgres_data:
+  gcs_data:

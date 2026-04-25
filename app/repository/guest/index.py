@@ -3,6 +3,7 @@ from os import name
 import uuid
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from helpers.error_management import msg
 from models.guest import GuestSession
 from schemas.guestSchema import GuestBase
 from helpers.AES import AES256Service
@@ -40,7 +41,13 @@ class GuestRepo:
         except Exception as e:
             self.db.rollback()
             print(e)
-            raise HTTPException(status_code=500, detail="Database transaction failed")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message_ar": msg("errors", "db_failed", "ar"),
+                    "message_en": msg("errors", "db_failed", "en"),
+                },
+            )
 
     def is_Guest_Eligible(self, guest_uid):
         try:
@@ -56,7 +63,13 @@ class GuestRepo:
         except Exception as e:
             self.db.rollback()
             print(e)
-            raise HTTPException(status_code=500, detail="Database transaction failed")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message_ar": msg("errors", "db_failed", "ar"),
+                    "message_en": msg("errors", "db_failed", "en"),
+                },
+            )
 
     def is_Guest_Exists(self, guest_uid):
         guest_obj = (
@@ -72,4 +85,10 @@ class GuestRepo:
         except Exception as e:
             self.db.rollback()
             print(e)
-            raise HTTPException(status_code=500, detail="Database transaction failed")
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message_ar": msg("errors", "db_failed", "ar"),
+                    "message_en": msg("errors", "db_failed", "en"),
+                },
+            )

@@ -9,6 +9,8 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 
+from helpers.error_management import msg
+from core.config.lang import MESSAGES, VAL_ERR_MAP
 from repository.users.index import UserRepo
 from db.session import get_DB
 from models.guest import GuestSession
@@ -19,138 +21,25 @@ load_dotenv(dotenv_path=ENV_PATH)
 security_scheme = HTTPBearer()
 
 
-async def get_current_user(
-    res: HTTPAuthorizationCredentials = Depends(security_scheme),
-    db: Session = Depends(get_DB),
-):
-    token = res.credentials  # This is the raw JWT string
-    # --- 1. HANDLE GUEST LOGIC (UUID) ---
-    if token.startswith("guest:"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Guests are not authorized to use this feature.",
-        )
-    try:
-        SECRET_KEY = os.getenv("JWT_SECRET")
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
-        # Check if the token has expired (pyjwt handles this, but good to be explicit)
-        exp = payload.get("exp")
-        if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(
-            timezone.utc
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-            )
-
-        return payload  # Returns {'id': 'user_id', 'email': '...', 'exp': ...}
-
-    except jwt.PyJWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-async def get_demo_graphic_patent(
-    res: HTTPAuthorizationCredentials = Depends(security_scheme),
-    db: Session = Depends(get_DB),
-):
-    token = res.credentials  # This is the raw JWT string
-    # --- 1. HANDLE GUEST LOGIC (UUID) ---
-    if token.startswith("guest:"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Guests are not authorized to use this feature.",
-        )
-    try:
-        SECRET_KEY = os.getenv("JWT_SECRET")
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
-        # Check if the token has expired (pyjwt handles this, but good to be explicit)
-        exp = payload.get("exp")
-        if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(
-            timezone.utc
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-            )
-        user_repo = UserRepo(db)
-        user_obj = user_repo.get_user_by_id(payload.get("id"))
-        demo_obj = user_repo.get_user_demo_data(payload.get("id"))
-        if not user_obj.research_consent:
-            print("payload___________", payload)
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="research consent_required",
-            )
-        print("demo obj : ", demo_obj)
-        if demo_obj:
-            return payload  # Returns {'id': 'user_id', 'email': '...', 'exp': ...}
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="demographic data already exist",
-            )
-    except jwt.PyJWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-async def get_current_user_gateway(
-    res: HTTPAuthorizationCredentials = Depends(security_scheme),
-    db: Session = Depends(get_DB),
-):
-    token = res.credentials  # This is the raw JWT string
-    # --- 1. HANDLE GUEST LOGIC (UUID) ---
-    if token.startswith("guest:"):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. Guests are not authorized to use this feature.",
-        )
-    try:
-        SECRET_KEY = os.getenv("JWT_SECRET")
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-
-        # Check if the token has expired (pyjwt handles this, but good to be explicit)
-        exp = payload.get("exp")
-        if exp and datetime.fromtimestamp(exp, tz=timezone.utc) < datetime.now(
-            timezone.utc
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired"
-            )
-        if not payload.get("consent_given_at"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="tos_consent_required"
-            )
-        return payload  # Returns {'id': 'user_id', 'email': '...', 'exp': ...}
-
-    except jwt.PyJWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
 def create_access_token(data: dict):
-
     to_encode = data.copy()
+    to_encode_refresh = data.copy()
+    # 1. Calculate expiration
+    expire = datetime.now(timezone.utc) + timedelta(hours=1)
+    expire_refresh = datetime.now(timezone.utc) + timedelta(hours=1)
+    # 2. Convert datetime to integer timestamp
+    # This is the "Safe" way that works in every environment
+    to_encode.update({"exp": int(expire.timestamp())})
+    to_encode_refresh.update({"exp": expire_refresh})
+    # 3. Sign the token
+    for key, value in to_encode.items():
+        if isinstance(value, datetime):
+            to_encode[key] = int(value.timestamp())
+    encoded_secret_jwt = jwt.encode(
+        to_encode, os.getenv("JWT_SECRET"), algorithm="HS256"
+    )
 
-    # Set expiration (e.g., 7 days)
-    expire = datetime.now(timezone.utc) + timedelta(days=31)
-
-    # The 'exp' claim is reserved in JWT for expiration
-    to_encode.update({"exp": expire})
-
-    # Sign the token with your secret key
-    encoded_jwt = jwt.encode(to_encode, os.getenv("JWT_SECRET"), algorithm="HS256")
-    return encoded_jwt
+    return encoded_secret_jwt
 
 
 async def logger(request: Request, call_next):
@@ -169,8 +58,19 @@ async def validation_exception_handler(
 ) -> JSONResponse:
     errors = []
     for err in exc.errors():
+        field_name = str(err["loc"][-1])
+        error_type = err["type"]
+        original_msg = err["msg"]
+        msg_ar = VAL_ERR_MAP.get(error_type, original_msg)
+        if error_type == "missing":
+            msg_ar = f"الحقل {field_name} مطلوب"
         errors.append(
-            {"field": str(err["loc"][-1]), "message": err["msg"], "type": err["type"]}
+            {
+                "field": field_name,
+                "message_en": original_msg,
+                "message_ar": msg_ar,
+                "type": error_type,
+            }
         )
 
     return JSONResponse(
@@ -179,8 +79,8 @@ async def validation_exception_handler(
             "success": False,
             "error": {
                 "code": "VALIDATION_FAILED",
-                "message": "Input validation failed. Please check the required fields.",
-                "message_ar": "فشل التحقق من البيانات. يرجى التحقق من الحقول المطلوبة.",
+                "message_en": msg("errors", "input_validation_failed", "en"),
+                "message_ar": msg("errors", "input_validation_failed", "ar"),
                 "details": {"fields": errors},
             },
         },
@@ -188,20 +88,26 @@ async def validation_exception_handler(
 
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
-    # This allows you to pass a dict as 'detail' for complex errors
-    # or a simple string for quick errors.
     detail = exc.detail
-    if isinstance(detail, str):
-        detail = {"message": detail, "code": "HTTP_ERROR"}
 
+    # 1. Handle the case where a developer just passes a string: raise HTTPException(400, "Error")
+    if isinstance(detail, str):
+        detail = {
+            "message_en": detail,
+            "message_ar": "خطأ في النظام",  # Generic fallback for string-only raises
+            "code": "HTTP_ERROR",
+        }
+
+    # 2. Extract values. If you passed "message_ar" in your raise,
+    # detail.get("message_ar") will grab YOUR message, NOT the fallback.
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "success": False,
             "error": {
                 "code": detail.get("code", "ERROR"),
-                "message": detail.get("message"),
-                "message_ar": detail.get("message_ar", "خطأ في النظام"),
+                "message_en": detail.get("message_en", "An unexpected error occurred"),
+                "message_ar": detail.get("message_ar", "حدث خطأ غير متوقع"),
                 "details": detail.get("details", {}),
             },
         },
@@ -218,8 +124,8 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
             "success": False,
             "error": {
                 "code": "INTERNAL_SERVER_ERROR",
-                "message": "An unexpected error occurred. Please try again later.",
-                "message_ar": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى لاحقاً.",
+                "message_en": msg("errors", "unexpected_error_occured", "en"),
+                "message_ar": msg("errors", "unexpected_error_occured", "ar"),
                 "trace_id": "req_audit_log_id",  # You can generate a UUID here
             },
         },

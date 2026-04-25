@@ -23,9 +23,3 @@ class GuestBase(BaseModel):
 class GuestResponse(BaseModel):
     guest_token: Optional[str] = None
     expires_at: Optional[datetime] = None
-
-
-def map_model_to_guest(guest_model: GuestBase) -> GuestResponse:
-    return GuestResponse(
-        expires_at=guest_model.expires_at, guest_token=guest_model.guest_token
-    )

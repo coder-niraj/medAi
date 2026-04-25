@@ -1,4 +1,48 @@
+
+# Current entries (keep these)
 **/__pycache__
 **/.venv
 **/node_modules
 **/.git
+**/documentation
+**/dataschema
+**/api_responses
+**/.vscode
+**/ai_pipeline
+
+# Add these:
+
+# Python
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.ruff_cache
+**/htmlcov
+**/.coverage
+**/*.egg-info
+**/dist
+**/build
+
+# Environment files
+**/.env
+**/.env.*
+# except keep example:
+!**/.env.example
+
+# Docker
+**/docker-compose*.yml
+**/.dockerignore
+**/Dockerfile
+
+# Logs
+**/*.log
+**/logs
+
+# OS
+**/.DS_Store
+**/Thumbs.db
+
+# Testing
+**/tests
+**/test_*

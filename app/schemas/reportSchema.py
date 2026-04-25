@@ -1,10 +1,12 @@
 import array
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, EmailStr
 from uuid import UUID
 from datetime import date, datetime
+
+from helpers.error_management import msg
 
 
 class ReportType(str, Enum):
@@ -55,39 +57,26 @@ class ReportResponse(BaseModel):
 
 
 class ReportDocumentResponse(BaseModel):
-    report_id: UUID
+    report_id: Optional[UUID] = None
     status: str
+    Message_en: Optional[str] = None
+    Message_ar: Optional[str] = None
+
+
+class ReportUrlRepsonse(BaseModel):
+    file_url: str
+    expires_at: datetime
+    content_type: Optional[str] = None
+    display_name: str
+    is_image_only: bool
 
 
 class ReportImageResponse(BaseModel):
     report_id: UUID
     status: str
-    message: str = (
-        "Image stored. Please also upload the written report from your radiologist for AI explanation."
-    )
+    message_ar: str = msg("errors", "image_only", "ar")
+    message_en: str = msg("errors", "image_only", "en")
 
 
 class ReportDelete(BaseModel):
     report_id: UUID
-
-
-def report_list(reports):
-    return [
-        {
-            "id": str(report.id),
-            "display_name": report.display_name,
-            "report_type": report.report_type,
-            "report_subtype": report.report_subtype,
-            "panel_count": report.panel_count,
-            "detected_panels": report.detected_panels,
-            "document_quality": report.document_quality,
-            # "abnormal_count": report.abnormal_count,
-            "cardiac_urgency_flag": report.cardiac_urgency_flag,
-            "is_bilingual": report.is_bilingual,
-            "status": report.status,
-            "uploaded_at": (
-                report.uploaded_at.isoformat() if report.uploaded_at else None
-            ),
-        }
-        for report in reports
-    ]

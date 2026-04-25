@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, DateTime, Enum, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
 from db.base import Base
 
+
 class AuditHook(Base):
     __tablename__ = "audit_hooks"
 
@@ -13,10 +14,10 @@ class AuditHook(Base):
     # user_id: FK nullable
     # NULL for guest activities or system-level automation
     user_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("users.id", ondelete="SET NULL"), 
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
-        index=True
+        index=True,
     )
 
     # action: Categorized event type
@@ -30,8 +31,7 @@ class AuditHook(Base):
 
     # outcome: SUCCESS | FAILURE
     outcome = Column(
-        Enum("SUCCESS", "FAILURE", name="audit_outcome_enum"), 
-        nullable=False
+        Enum("SUCCESS", "FAILURE", name="audit_outcome_enum"), nullable=False
     )
 
     # ip_address_enc: AES-256 encrypted (PHI: Med)
@@ -42,11 +42,8 @@ class AuditHook(Base):
 
     # timestamp: UTC with millisecond precision
     timestamp = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
-        index=True
+        index=True,
     )
-
-    def __repr__(self):
-        return f"<AuditHook(action={self.action}, user={self.user_id}, outcome={self.outcome})>"
