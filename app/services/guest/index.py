@@ -1,8 +1,8 @@
 from fastapi import HTTPException, Request, status
-from helpers.audit import set_audit_state
+from helpers.audit_context import set_audit_state
 from repository.guest.index import GuestRepo
 
-from schemas.guestSchema import GuestBase, GuestResponse
+from DTOs.guestSchema import GuestBase, GuestResponse
 from utils.firebase import verify_token
 
 

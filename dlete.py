@@ -1,7 +1,7 @@
 import requests
 
 BASE_URL = "http://localhost:8000"
-BUCKET = "medical-reports"
+BUCKET = "med-ai-reports"
 
 # 1. Get all objects
 list_url = f"{BASE_URL}/storage/v1/b/{BUCKET}/o"

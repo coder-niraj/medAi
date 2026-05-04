@@ -1,10 +1,12 @@
 import os
 import time
+from services.kms import KMSService
+from subscribers.index import lifespan
 from fastapi import FastAPI, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from utils.events import init_pubsub
+from tasks.index import init_pubsub
 from db.session import engine
 from db.base import Base
 from helpers.index import (
@@ -30,22 +32,22 @@ from models.lab import LabValue
 from models.llm import LLMTrace
 from models.patient import PatientDemographics
 from models.user import User
-from middlewares.index import audit_logger_middleware
+from services.audit_service import audit_logger_middleware
 
 # ✅ Load ENV correctly
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_PATH = os.path.join(BASE_DIR, "app", "core", "security", ".env")
 load_dotenv(dotenv_path=ENV_PATH)
 
-fast_app = FastAPI()
-
-
-@fast_app.on_event("startup")
-async def startup_event():
-    try:
-        init_pubsub()
-    except Exception as e:
-        print("PubSub startup skipped:", e)
+# fast_app = FastAPI()
+fast_app = FastAPI(lifespan=lifespan)
+kms_service = KMSService()
+# @fast_app.on_event("startup")
+# async def startup_event():
+#     try:
+#         init_pubsub()
+#     except Exception as e:
+#         print("PubSub startup skipped:", e)
 
 
 # ✅ Middleware

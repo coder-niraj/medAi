@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from services.kms import KMSService
+
 
 # app/db/session.py
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,7 +15,8 @@ print(f"DEBUG: Looking for .env at: {ENV_PATH}")
 print(f"DEBUG: Does file exist? {os.path.exists(ENV_PATH)}")
 
 load_dotenv(dotenv_path=ENV_PATH)
-DB_url = os.getenv("DATABASE_URL")
+
+DB_url = KMSService.get_secret("DATABASE_URL")
 engine = create_engine(
         DB_url, # type: ignore
         pool_pre_ping=True

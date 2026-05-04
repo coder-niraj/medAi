@@ -1,9 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from helpers.error_management import msg
+from helpers.msg import msg
 from models.auditLogs import AuditHook
-from schemas.AuditSchema import AuditDTO
+from DTOs.auditSchema import AuditDTO
 
 
 class AuditRepo:

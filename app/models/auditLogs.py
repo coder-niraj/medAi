@@ -27,7 +27,7 @@ class AuditHook(Base):
     resource_type = Column(String(50), nullable=False)
 
     # resource_id: The specific row affected
-    resource_id = Column(UUID(as_uuid=True), nullable=False)
+    resource_id = Column(UUID(as_uuid=True), nullable=True)
 
     # outcome: SUCCESS | FAILURE
     outcome = Column(

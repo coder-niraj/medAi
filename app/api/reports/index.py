@@ -1,12 +1,15 @@
 from typing import Any
 from fastapi import HTTPException, Request
-from helpers.audit import set_audit_state
-from helpers.error_management import msg
-from schemas.reportSchema import ReportDocumentResponse
-from utils.cloud import StorageManager
+from helpers.audit_context import set_audit_state
+from helpers.msg import msg
+from DTOs.reportSchema import ReportDocumentResponse
+from services.storage_service import StorageManager
 from repository.reports.index import ReportRepo
 from services.reports.index import ReportServices
 from sqlalchemy.orm import Session
+import json
+from google.cloud import pubsub_v1
+
 import magic
 
 
@@ -16,6 +19,10 @@ class ReportsController:
         self.report_repo = ReportRepo(db)
         self.report_storage = StorageManager()
         self.report_Service = ReportServices(self.report_repo, self.report_storage)
+        self.publisher = pubsub_v1.PublisherClient()
+        self.topic_path = self.publisher.topic_path(
+            "med-ai-project", "new-report-uploaded"
+        )
 
     async def get_all_reports(
         self, request: Request, user_data
@@ -44,7 +51,7 @@ class ReportsController:
                     action="UPLOAD",
                     resource_type="report",
                     outcome="FAILURE",
-                    resource_id=None,
+                    resource_id=user_id,
                 )
                 raise HTTPException(
                     400,
@@ -56,7 +63,7 @@ class ReportsController:
 
             mime = magic.from_buffer(content, mime=True)
             allowed = ["application/pdf", "image/jpeg", "image/png"]
-
+            print("+++++++++++++++++++++ ")
             if mime not in allowed:
 
                 set_audit_state(
@@ -64,7 +71,7 @@ class ReportsController:
                     action="UPLOAD",
                     resource_type="report",
                     outcome="FAILURE",
-                    resource_id=None,
+                    resource_id=user_id,
                 )
                 raise HTTPException(
                     400,
@@ -83,6 +90,13 @@ class ReportsController:
                 outcome="SUCCESS",
                 resource_id=file_url.report_id,
             )
+            message_payload = {
+                "user_id": str(user_id),
+                "file_url": str(file_url.report_id),
+            }
+            data = json.dumps(message_payload).encode("utf-8")
+
+            self.publisher.publish(self.topic_path, data)
             return file_url
         except HTTPException:
             raise
@@ -93,7 +107,7 @@ class ReportsController:
                 action="UPLOAD",
                 resource_type="report",
                 outcome="FAILURE",
-                resource_id=None,
+                resource_id=user_id,
             )
             raise HTTPException(
                 500,

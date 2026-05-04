@@ -8,8 +8,9 @@ from fastapi.responses import JSONResponse
 import jwt
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
-
-from helpers.error_management import msg
+from helpers.msg import msg
+from services.kms import KMSService
+from core.config.lang import MESSAGES
 from core.config.lang import MESSAGES, VAL_ERR_MAP
 from repository.users.index import UserRepo
 from db.session import get_DB
@@ -19,6 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENV_PATH = os.path.join(BASE_DIR, "app", "core", "security", ".env")
 load_dotenv(dotenv_path=ENV_PATH)
 security_scheme = HTTPBearer()
+
 
 
 def create_access_token(data: dict):
@@ -36,7 +38,7 @@ def create_access_token(data: dict):
         if isinstance(value, datetime):
             to_encode[key] = int(value.timestamp())
     encoded_secret_jwt = jwt.encode(
-        to_encode, os.getenv("JWT_SECRET"), algorithm="HS256"
+        to_encode, KMSService.get_secret("JWT_SECRET"), algorithm="HS256"
     )
 
     return encoded_secret_jwt
@@ -44,12 +46,9 @@ def create_access_token(data: dict):
 
 async def logger(request: Request, call_next):
     start = time.time()
-
     response = await call_next(request)
-
     process_time = time.time() - start
     print(f"{request.method} {request.url} completed in {process_time:.3f}s")
-
     return response
 
 
@@ -89,8 +88,6 @@ async def validation_exception_handler(
 
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     detail = exc.detail
-
-    # 1. Handle the case where a developer just passes a string: raise HTTPException(400, "Error")
     if isinstance(detail, str):
         detail = {
             "message_en": detail,
@@ -98,8 +95,6 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
             "code": "HTTP_ERROR",
         }
 
-    # 2. Extract values. If you passed "message_ar" in your raise,
-    # detail.get("message_ar") will grab YOUR message, NOT the fallback.
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -115,7 +110,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    # Log the full error to your backend console/GCP Logs
+    
     print(f"System Error: {str(exc)}")
 
     return JSONResponse(
@@ -126,10 +121,12 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
                 "code": "INTERNAL_SERVER_ERROR",
                 "message_en": msg("errors", "unexpected_error_occured", "en"),
                 "message_ar": msg("errors", "unexpected_error_occured", "ar"),
-                "trace_id": "req_audit_log_id",  # You can generate a UUID here
+                "trace_id": "req_audit_log_id",  
             },
         },
     )
+
+
 
 
 # raise HTTPException(status_code=403, detail={

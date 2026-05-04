@@ -6,15 +6,15 @@ from services.guest.index import GuestService
 from repository.users.index import UserRepo
 from helpers.index import create_access_token
 from services.user.index import UserService
-from schemas.userSchema import (
+from DTOs.userSchema import (
     LoginResponse,
     ResearchConsent,
     UserCreate,
     UserDemographics,
     UserRegisterDTO,
-    UserRegisterVlidation,
+    UserRegisterValidation,
 )
-from schemas.guestSchema import GuestBase, GuestResponse
+from DTOs.guestSchema import GuestBase, GuestResponse
 
 
 class AuthController:
@@ -25,7 +25,7 @@ class AuthController:
         self.guest_service = GuestService(self.guest_repo)
 
     def register(
-        self, request: Request, user_dto: UserRegisterVlidation
+        self, request: Request, user_dto: UserRegisterValidation
     ) -> UserRegisterDTO:
 
         user_obj = self.user_service.register(request, user_dto)

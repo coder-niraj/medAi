@@ -91,3 +91,24 @@ MESSAGES = {
         },
     },
 }
+
+
+DESCRIPTIVE_FLAG_MAP = {
+    # English
+    "negative":   "normal",
+    "positive":   "high",
+    "trace":      "borderline_high",
+    "absent":     "normal",
+    "present":    "high",
+    "moderate":   "high",
+    "heavy":      "critical",
+    "few":        "borderline_high",
+    "many":       "high",
+    
+    # Arabic
+    "سلبي":       "normal",
+    "إيجابي":     "high",
+    "آثار":       "borderline_high",
+    "غائب":       "normal",
+    "موجود":      "high",
+}

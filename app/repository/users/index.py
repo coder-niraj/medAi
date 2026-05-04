@@ -4,13 +4,13 @@ import uuid
 from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from sympy import true
-from helpers.audit import set_audit_state
-from helpers.error_management import msg
+from helpers.audit_context import set_audit_state
+from helpers.msg import msg
 from models import triage
 from models.user import User
 from models.patient import PatientDemographics
-from schemas.userSchema import ResearchConsent, UserCreate, UserDemographics
-from helpers.AES import AES256Service
+from DTOs.userSchema import ResearchConsent, UserCreate, UserDemographics
+from services.encryption_service import AES256Service
 
 
 class UserRepo:

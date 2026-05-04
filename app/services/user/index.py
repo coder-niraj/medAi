@@ -2,17 +2,17 @@ from typing import Any, Tuple
 
 from fastapi import HTTPException, Request, status
 
-from helpers.AES import AES256Service
-from helpers.audit import set_audit_state
-from helpers.error_management import msg
+from services.encryption_service import AES256Service
+from helpers.audit_context import set_audit_state
+from helpers.msg import msg
 from repository.users.index import UserRepo
-from schemas.userSchema import (
+from DTOs.userSchema import (
     ResearchConsent,
     UserCreate,
     UserDemographics,
     UserLoginDTO,
     UserRegisterDTO,
-    UserRegisterVlidation,
+    UserRegisterValidation,
 )
 from utils.firebase import verify_token
 
@@ -78,7 +78,7 @@ class UserService:
         return decoded_token["uid"], decoded_token["email"]
 
     def register(
-        self, request: Request, data: UserRegisterVlidation
+        self, request: Request, data: UserRegisterValidation
     ) -> UserRegisterDTO:
         fb_uid, fb_email = self._get_firebase_user(request, data.firebase_id_token)
         exists = self.user_repo.get_user_by_firebase_uid(fb_uid)

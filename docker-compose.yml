@@ -1,4 +1,7 @@
+# docker-compose.yml
+
 services:
+
   api:
     build: ./app
     container_name: med_ai_backend
@@ -7,17 +10,50 @@ services:
     command: uvicorn main:fast_app --host 0.0.0.0 --port 3001 --reload --reload-dir /app --reload-include '*.py' --reload-exclude 'venv/*'
     ports:
       - "3001:3001"
-    env_file:
-      - ./app/core/security/.env
     depends_on:
-      - db
-      - pubsub
-      - storage
+      db:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
     environment:
+      - ENVIRONMENT=development
       - DATABASE_URL=postgresql://postgres:svipl@db:5432/med_ai_db
-      - PUBSUB_EMULATOR_HOST=pubsub:8085
       - STORAGE_EMULATOR_HOST=http://storage:8000
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=dev-root-token
+      - GOOGLE_CLOUD_PROJECT=medical-ai-dev
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+  
+  vault:
+    build:
+      context: .
+      dockerfile: Dockerfile.vault
+    container_name: medai-vault
+    privileged: true
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_DISABLE_MLOCK=true
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
+  vault-init:
+    image: hashicorp/vault:1.13.3
+    container_name: vault-init
+    volumes:
+      - ./init-vault.sh:/init-vault.sh # Ensure local path is correct
+    entrypoint: >
+      /bin/sh -c "
+      apk add --no-cache curl && 
+      /init-vault.sh
+      "
+    depends_on:
+      vault:
+        condition: service_healthy # <--- Wait for the healthcheck to pass
   db:
     image: ankane/pgvector:v0.5.1
     container_name: med_ai_db
@@ -29,6 +65,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   adminer:
     image: adminer
@@ -47,26 +88,13 @@ services:
     volumes:
       - gcs_data:/data
 
-  pubsub_ui:
-    image: ghcr.io/drehelis/gcp-emulator-ui:main
-    container_name: medai-pubsub_ui
-    ports:
-      - "8086:8085"
-      - "8087:8086"
-
   pubsub:
-    image: google/cloud-sdk:latest
+    image: google/cloud-sdk:emulators
     container_name: medai-pubsub
-    command: >
-      bash -c "
-      apt-get update &&
-      apt-get install -y openjdk-17-jre &&
-      gcloud beta emulators pubsub start
-      --host-port=0.0.0.0:8085
-      --project=med-ai-project
-      "
+    command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=med-ai-project
     ports:
       - "8085:8085"
+
 volumes:
   postgres_data:
   gcs_data:

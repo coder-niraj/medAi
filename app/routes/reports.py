@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from api.reports.index import ReportsController
 from db.session import get_DB
-from middlewares.index import get_current_user_gateway
-from schemas.reportSchema import ReportDelete, ReportType
+from middlewares.auth import consent_gate
+from DTOs.reportSchema import ReportDelete, ReportType
 
 router = APIRouter(prefix="/reports")
 
@@ -16,7 +16,7 @@ def get_auth_controller(db: Session = Depends(get_DB)):
 @router.get("/")
 async def list_reports(
     request: Request,
-    token_data: dict = Depends(get_current_user_gateway),
+    token_data: dict = Depends(consent_gate),
     controller: ReportsController = Depends(get_auth_controller),
 ):
     return await controller.get_all_reports(request, user_data=token_data)
@@ -28,7 +28,7 @@ async def upload_report(
     file: UploadFile = File(...),
     report_type: ReportType = Form(...),
     display_name: str = Form(...),
-    token_data: dict = Depends(get_current_user_gateway),
+    token_data: dict = Depends(consent_gate),
     controller: ReportsController = Depends(get_auth_controller),
 ):
     return await controller.upload_doc_report(
@@ -45,7 +45,7 @@ def get_report_summery():
 def get_limited_time_url(
     request: Request,
     report_id: str,
-    token_data: dict = Depends(get_current_user_gateway),
+    token_data: dict = Depends(consent_gate),
     controller: ReportsController = Depends(get_auth_controller),
 ):
     return controller.short_lived_urls_in_app_doc_viewer(
@@ -57,7 +57,7 @@ def get_limited_time_url(
 async def delete_file(
     request: Request,
     report_id: str,
-    token_data: dict = Depends(get_current_user_gateway),
+    token_data: dict = Depends(consent_gate),
     controller: ReportsController = Depends(get_auth_controller),
 ):
     return await controller.delete_report(request, report_id, token_data.get("id"))

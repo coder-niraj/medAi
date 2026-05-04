@@ -2,13 +2,13 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 import uuid
 
-from helpers.audit import set_audit_state
-from helpers.error_management import msg
+from helpers.audit_context import set_audit_state
+from helpers.msg import msg
 from repository.reports.index import ReportRepo
 from fastapi import File, HTTPException, Request, status
 from utils.firebase import verify_token
-from schemas.reportSchema import ReportDocumentResponse, ReportSchema, ReportUrlRepsonse
-from utils.cloud import StorageManager
+from DTOs.reportSchema import ReportDocumentResponse, ReportSchema, ReportUrlRepsonse
+from services.storage_service import StorageManager
 
 
 class ReportServices:

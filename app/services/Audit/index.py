@@ -1,5 +1,5 @@
 from repository.audit.index import AuditRepo
-from schemas.AuditSchema import AuditDTO
+from DTOs.auditSchema import AuditDTO
 
 
 class AuditService:

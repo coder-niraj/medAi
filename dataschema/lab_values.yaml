@@ -1,60 +1,61 @@
 lab_values:
-  - id:
-      - UUID PK
-      - PHI: No
-  - report_id:
-      - UUID FK
-      - PHI: No
-      - References REPORTS.id.
-  - panel_name:
-      - VARCHAR
-      - PHI: No
-      - The panel this test belongs to, from section_map
-      - Values:
-          - CBC | Lipid Panel | LFTs | KFTs | TFTs | HbA1c |
-          - Urinalysis | Cardiac Enzymes | Vitamins & Minerals |
-          - Iron Studies | Hormones | Tumour Markers |
-          - Prescription | Other
-      - Enables per-panel grouping in summary and vault display.
-  - test_category:
-      - VARCHAR
-      - PHI: No
-      - Broader grouping for cross-document comparison and fine-tuning stratification.
-      - Values:
-          - haematology |
-          - biochemistry | endocrinology | cardiac_enzymes |
-          - tumour_markers | urinalysis | immunology |
-          - medications | other.
-      - cardiac_enzymes value triggers cardiac_urgency_flag check
-  - test_name:
-      - VARCHAR
-      - PHI: No
-      - e.g. "Hemoglobin", "HbA1c", "ALT".
-      - Stored in original language from report.
-  - value:
-      - NUMERIC
-      - PHI: Med
-      - Exact numeric value. Never rounded
-  - unit:
-      - VARCHAR
-      - PHI: No
-      - e.g: g/dL, mmol/L
-      - Preserve original unit from report
-  - normal_range_low:
-      - NUMERIC
-      - PHI: No
-      - Lower bound of reference range
-  - normal_range_high:
-      - NUMERIC
-      - PHI: No
-      - Upper bound of reference range
-  - flag:
-      - ENUM
-      - PHI: No
-      - normal | low | high | borderline_low |
-      - borderline_high | critical
+    - id:
+          - UUID PK
+          - PHI: No
+    - report_id:
+          - UUID FK
+          - PHI: No
+          - References REPORTS.id.
+    - panel_name:
+          - VARCHAR
+          - PHI: No
+          - The panel this test belongs to, from section_map
+          - Values:
+                - CBC | Lipid Panel | LFTs | KFTs | TFTs | HbA1c |
+                - Urinalysis | Cardiac Enzymes | Vitamins & Minerals |
+                - Iron Studies | Hormones | Tumour Markers |
+                - Prescription | Other
+          - Enables per-panel grouping in summary and vault display.
+    - test_category:
+          - VARCHAR
+          - PHI: No
+          - Broader grouping for cross-document comparison and fine-tuning
+            stratification.
+          - Values:
+                - haematology |
+                - biochemistry | endocrinology | cardiac_enzymes |
+                - tumour_markers | urinalysis | immunology |
+                - medications | other.
+          - cardiac_enzymes value triggers cardiac_urgency_flag check
+    - test_name:
+          - VARCHAR
+          - PHI: No
+          - e.g. "Hemoglobin", "HbA1c", "ALT".
+          - Stored in original language from report.
+    - value:
+          - NUMERIC
+          - PHI: Med
+          - Exact numeric value. Never rounded
+    - unit:
+          - VARCHAR
+          - PHI: No
+          - e.g: g/dL, mmol/L
+          - Preserve original unit from report
+    - normal_range_low:
+          - NUMERIC
+          - PHI: No
+          - Lower bound of reference range
+    - normal_range_high:
+          - NUMERIC
+          - PHI: No
+          - Upper bound of reference range
+    - flag:
+          - ENUM
+          - PHI: No
+          - normal | low | high | borderline_low |
+          - borderline_high | critical
 
-  - extraced_language:
-      - VARCHAR
-      - PHI: No
-      - Language of the test name in the original report.
+    - extracted_language:
+          - VARCHAR
+          - PHI: No
+          - Language of the test name in the original report.

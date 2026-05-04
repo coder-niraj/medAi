@@ -1,91 +1,244 @@
 chat_messages:
-    - id:
-          - UUID PK
-          - PHI: No
-    - session_id:
-          - UUID FK
-          - PHI: No
-    - role:
-          - ENUM
-          - PHI: No
-          - user | assistant
-    - content_enc:
-          - TEXT
-          - PHI: High
-          - AES-256 encrypted message text.
-    - retrieved_chunk_ids:
-          - UUID[]
-          - PHI: No
-          - Array of EMBEDDINGS.id used for this response.
-          - NULL for triage/general.
-    - finish_reason:
-          - VARCHAR
-          - PHI: No
-          - STOP | MAX_TOKENS | SAFETY | GUARDRAIL_BLOCKED.
-          - Logged for monitoring.
-    - prompt_tokens:
-          - INTEGER
-          - PHI: No
-          - Token usage metrics for cost monitoring.
-    - completion_tokens:
-          - INTEGER
-          - PHI: No
-          - Token usage metrics for cost monitoring.
-    - patient_rating:
-          - SMALLINT nullable
-          - PHI: No
-          - 1-5 star rating from in-app feedback widget.
-    - patient_rating_at:
-          - TIMESTAMP
-          - nullable
-          - PHI: No
-          - When rated.
-    - user_feedback_flag:
-          - ENUM
-          - nullable
-          - PHI: No
-          - helpful | wrong | unsafe | too_vague
-    - guardrail_triggered:
-          - BOOLEAN
-          - PHI: No
-          - Default FALSE.
-          - TRUE if Layer 2 fired and replaced this response.
-    - guardrail_reason:
-          - VARCHAR nullable
-          - PHI: No
-          - finish_reason_safety | keyword_match |
-          - low_confidence_retrieval | triage_diagnosis_pattern |
-          - red_downgrade_attempt | cardiac_urgency_override | tumour_marker_disclaimer_missing
-    - fallback_used:
-          - BOOLEAN
-          - PHI: No
-          - Default FALSE.
-          - TRUE if pre-written safe fallback was returned.
-    - response_language:
-          - VARCHAR
-          - PHI: No
-          - ar | en
-    - question_language:
-          - VARCHAR
-          - PHI: No
-          - ar | en
-    - question_category:
-          - VARCHAR nullable
-          - PHI: No
-          - Auto-classified:
-                - lab_explanation | symptom_triage |
-                - trend | comparison | general | medication_query |
-                - panel_specific_query
-    - ft_eligible:
-          - BOOLEAN nullable
-          - PHI: No
-          - Computed nightly.
-          - TRUE if row meets quality bar for finetuning pipeline.
-    - ft_excluded_reason:
-          - VARCHAR nullable
-          - PHI: No
-          - Why excluded if ft_eligible = FALSE.
-    - created_at:
-          - TIMESTAMP
-          - PHI: No
-          - UTC. Millisecond precision.
+      - id:
+              - UUID PK
+              - PHI: No
+      - session_id:
+              - UUID FK
+              - PHI: No
+      - role:
+              - ENUM
+              - PHI: No
+              - user | assistant
+      - content_enc:
+              - TEXT
+              - PHI: High
+              - AES-256 encrypted message text.
+      - retrieved_chunk_ids:
+              - UUID[]
+              - PHI: No
+              - Array of EMBEDDINGS.id used for this response.
+              - NULL for triage/general.
+              # NULL on user row — chunks are only retrieved FOR the assistant response
+              # not for the question itself
+      - finish_reason:
+              - VARCHAR
+              - PHI: No
+              - STOP | MAX_TOKENS | SAFETY | GUARDRAIL_BLOCKED.
+              - Logged for monitoring.
+              # NULL on user row — finish_reason only exists for assistant responses
+      - prompt_tokens:
+              - INTEGER
+              - PHI: No
+              - Token usage metrics for cost monitoring.
+              # NULL on user row — token counts only tracked on assistant row
+      - completion_tokens:
+              - INTEGER
+              - PHI: No
+              - Token usage metrics for cost monitoring. # NULL on user row
+      - patient_rating:
+              - SMALLINT nullable
+              - PHI: No
+              - 1-5 star rating from in-app feedback widget.
+              # NULL — patient rates the ASSISTANT response, not their own message
+      - patient_rating_at:
+              - TIMESTAMP
+              - nullable
+              - PHI: No
+              - When rated.
+              # NULL — same reason
+      - user_feedback_flag:
+              - ENUM
+              - nullable
+              - PHI: No
+              - helpful | wrong | unsafe | too_vague
+              # NULL — patient flags the ASSISTANT response, not their own message
+      - guardrail_triggered:
+              - BOOLEAN
+              - PHI: No
+              - Default FALSE.
+              - TRUE if Layer 2 fired and replaced this response.
+              # Always False on user row — guardrails check ASSISTANT responses only
+      - guardrail_reason:
+              - VARCHAR nullable
+              - PHI: No
+              - finish_reason_safety | keyword_match |
+              - low_confidence_retrieval | triage_diagnosis_pattern |
+              - red_downgrade_attempt | cardiac_urgency_override |
+                tumour_marker_disclaimer_missing # NULL — same reason
+      - fallback_used:
+              - BOOLEAN
+              - PHI: No
+              - Default FALSE.
+              - TRUE if pre-written safe fallback was returned.
+              # Always False on user row — fallback only applies to assistant responses
+      - response_language:
+              - VARCHAR
+              - PHI: No
+              - ar | en # NULL on user row — no response was generated
+      - question_language:
+              - VARCHAR
+              - PHI: No
+              - ar | en
+              # Language patient typed in — detected by langdetect
+              # Tells Gemini what language to respond in
+      - question_category:
+              - VARCHAR nullable
+              - PHI: No
+              - Auto-classified:
+                      - lab_explanation | symptom_triage |
+                      - trend | comparison | general | medication_query |
+                      - panel_specific_query
+        # NULL at insert time — classified nightly by background job
+        # will become: "lab_explanation" | "symptom_triage" | "trend" etc.
+      - ft_eligible:
+              - BOOLEAN nullable
+              - PHI: No
+              - Computed nightly.
+              - TRUE if row meets quality bar for finetuning pipeline.
+              # NULL at insert time — computed nightly
+              # will become True/False based on quality rules
+      - ft_excluded_reason:
+              - VARCHAR nullable
+              - PHI: No
+              - Why excluded if ft_eligible = FALSE.
+              # NULL — only populated if ft_eligible = False
+      - created_at:
+              - TIMESTAMP
+              - PHI: No
+              - UTC. Millisecond precision.
+
+
+
+
+
+
+
+
+
+{
+    # ─── IDENTITY ────────────────────────────────────────────
+    "id": "uuid-asst-001",          
+    # Different UUID from user row
+    # THIS is what LLM_TRACES.message_id points to
+
+    "session_id": "uuid-sess-001",  
+    # Same session_id as user row above
+
+    # ─── CONTENT ─────────────────────────────────────────────
+    "role": "assistant",            
+    # Gemini generated this message
+
+    "content_enc": "enc::Your HbA1c of 8.1% is above the normal range of 4.0-5.6%. It reflects your average blood sugar over the past three months. Please discuss these results with your doctor for a full medical interpretation.",
+    # AES-256 encrypted Gemini response
+    # After guardrail processing — not raw response
+    # Raw response stored in LLM_TRACES.raw_response_enc
+
+    # ─── RAG RETRIEVAL ───────────────────────────────────────
+    "retrieved_chunk_ids": [
+        "uuid-chunk-1",     # EMBEDDINGS.id — HbA1c value chunk (cosine: 0.94)
+        "uuid-chunk-2",     # EMBEDDINGS.id — reference ranges chunk (cosine: 0.88)
+        "uuid-chunk-3",     # EMBEDDINGS.id — previous HbA1c chunk (cosine: 0.81)
+    ],
+    # Which chunks from EMBEDDINGS were used to build Zone 2
+    # NULL for triage/general mode (no document attached)
+    # Used for debugging — which context did Gemini actually see?
+
+    # ─── GEMINI RESPONSE METADATA ────────────────────────────
+    "finish_reason": "STOP",        
+    # STOP          = Gemini finished naturally ✓
+    # MAX_TOKENS    = hit 1000 token cap — response cut off
+    # SAFETY        = Gemini's own safety filter blocked it
+    # GUARDRAIL_BLOCKED = platform Layer 2 guardrail replaced it
+
+    "prompt_tokens": 812,           
+    # Total tokens sent TO Gemini (Zone1+Zone2+Zone3+Zone4)
+    # Mirrors LLM_TRACES.total_prompt_tokens
+    # Used for cost monitoring per message
+
+    "completion_tokens": 104,       
+    # Tokens in Gemini's response
+    # Cost = prompt_tokens + completion_tokens
+
+    # ─── PATIENT FEEDBACK ────────────────────────────────────
+    "patient_rating": 5,            
+    # 1-5 stars — patient tapped rating widget after reading response
+    # NULL until patient rates
+    # Feeds ft_eligible calculation
+
+    "patient_rating_at": "2025-01-15T10:24:15.000Z",
+    # When patient submitted the rating
+    # NULL until rated
+
+    "user_feedback_flag": "helpful",
+    # Patient flagged this response as:
+    # helpful   = good response ✓
+    # wrong     = factually incorrect
+    # unsafe    = felt dangerous
+    # too_vague = not specific enough
+    # NULL until patient flags
+
+    # ─── GUARDRAILS ──────────────────────────────────────────
+    "guardrail_triggered": False,   
+    # FALSE = Gemini response passed all Layer 2 checks
+    # TRUE  = response was intercepted and replaced
+
+    "guardrail_reason": None,       
+    # NULL because guardrail_triggered = False
+    # If True would be one of:
+    # "finish_reason_safety"            Gemini flagged its own response
+    # "keyword_match"                   banned word detected in response
+    # "low_confidence_retrieval"        chunks were not relevant enough
+    # "triage_diagnosis_pattern"        AI implied a diagnosis
+    # "red_downgrade_attempt"           tried to lower red result
+    # "cardiac_urgency_override"        cardiac warning missing
+    # "tumour_marker_disclaimer_missing" tumour disclaimer missing
+
+    "fallback_used": False,         
+    # FALSE = Gemini's actual response was returned
+    # TRUE  = pre-written safe fallback text was returned instead
+    #         happens when guardrail fires and no safe reformulation possible
+
+    # ─── LANGUAGE ────────────────────────────────────────────
+    "response_language": "en",      
+    # Language Gemini responded in
+    # Should match question_language
+    # Mismatch = Zone 1 language instruction failed
+
+    "question_language": "en",      
+    # Language of the patient's question this response answers
+    # Carried forward from user row for easy querying
+
+    # ─── FINE TUNING ─────────────────────────────────────────
+    "question_category": "lab_explanation",
+    # Classified by nightly job:
+    # lab_explanation       = patient asking about a test value
+    # symptom_triage        = patient describing symptoms
+    # trend                 = comparing results over time
+    # comparison            = comparing two values
+    # general               = general health question
+    # medication_query      = asking about a drug
+    # panel_specific_query  = asking about a specific panel
+
+    "ft_eligible": True,            
+    # Computed nightly — this row qualifies for fine tuning because:
+    # guardrail_triggered = False  ✓
+    # fallback_used = False        ✓
+    # is_guest = False             ✓
+    # patient_rating >= 4          ✓ (rated 5)
+    # triage_status != abandoned   ✓
+
+    "ft_excluded_reason": None,     
+    # NULL because ft_eligible = True
+    # If False would explain why:
+    # "guardrail_triggered"
+    # "fallback_used"
+    # "guest_session"
+    # "low_patient_rating"
+    # "abandoned_triage"
+
+    # ─── AUDIT ───────────────────────────────────────────────
+    "created_at": "2025-01-15T10:23:43.891Z",
+    # Slightly after user row created_at
+    # Gap = time Gemini took to respond
+    # ORDER BY created_at ASC → correct conversation order
+}

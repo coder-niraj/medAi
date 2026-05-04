@@ -1,0 +1,16 @@
+FROM hashicorp/vault:latest
+
+# We need root to modify binary permissions
+USER root
+
+# Install libcap, attempt to remove capabilities, and cleanup.
+# The '|| true' ensures the build doesn't fail if the file is already clean.
+RUN apk add --no-cache libcap && \
+    (setcap -r /bin/vault || true) && \
+    apk del libcap
+
+# Switch back to the non-root vault user
+USER vault
+
+# Standard dev server command
+ENTRYPOINT ["vault", "server", "-dev", "-dev-root-token-id=dev-root-token", "-dev-listen-address=0.0.0.0:8200"]
