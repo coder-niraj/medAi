@@ -45,6 +45,22 @@ MESSAGES = {
             "en": "Report not found.",
             "ar": "لم يتم العثور على التقرير.",
         },
+        "report_not_Allowed": {
+            "en": "report_id not allowed for this mode.",
+            "ar": "لا يُسمح باستخدام report_id في هذا الوضع",
+        },
+        "demographics_required": {
+            "en": "demographics required.",
+            "ar": "التركيبة السكانية المطلوبة",
+        },
+        "report_id_required": {
+            "en": "report id required.",
+            "ar": "مطلوب معرف التقرير",
+        },
+        "guest_session_exist": {
+            "en": "login required for more chat session.",
+            "ar": "يلزم تسجيل الدخول لمزيد من جلسات الدردشة",
+        },
         "user_not_found": {
             "en": "User not found.",
             "ar": "لم يتم العثور على المستخدم.",
@@ -55,6 +71,10 @@ MESSAGES = {
         },
         "operation_failed": {"en": "Operation failed.", "ar": "فشلت العملية."},
         "already_registered": {"en": "Already registered.", "ar": "مسجل بالفعل."},
+        "not_registered": {
+            "en": "complete register before login",
+            "ar": "أكمل التسجيل قبل تسجيل الدخول",
+        },
         "registration_failed": {
             "en": "Could not complete registration",
             "ar": "لا يمكن إكمال التسجيل",
@@ -81,6 +101,14 @@ MESSAGES = {
             "en": "File size is too large.",
             "ar": "حجم الملف كبير جدًا.",
         },
+        "gender_required": {
+            "en": "gender is required.",
+            "ar": "الجنس مطلوب",
+        },
+        "age_range_required": {
+            "en": "age range is required.",
+            "ar": "الفئة العمرية مطلوبة",
+        },
         "storage_failed": {
             "en": "Failed to save report to storage.",
             "ar": "فشل حفظ التقرير في وحدة التخزين.",
@@ -95,20 +123,19 @@ MESSAGES = {
 
 DESCRIPTIVE_FLAG_MAP = {
     # English
-    "negative":   "normal",
-    "positive":   "high",
-    "trace":      "borderline_high",
-    "absent":     "normal",
-    "present":    "high",
-    "moderate":   "high",
-    "heavy":      "critical",
-    "few":        "borderline_high",
-    "many":       "high",
-    
+    "negative": "normal",
+    "positive": "high",
+    "trace": "borderline_high",
+    "absent": "normal",
+    "present": "high",
+    "moderate": "high",
+    "heavy": "critical",
+    "few": "borderline_high",
+    "many": "high",
     # Arabic
-    "سلبي":       "normal",
-    "إيجابي":     "high",
-    "آثار":       "borderline_high",
-    "غائب":       "normal",
-    "موجود":      "high",
+    "سلبي": "normal",
+    "إيجابي": "high",
+    "آثار": "borderline_high",
+    "غائب": "normal",
+    "موجود": "high",
 }

@@ -13,6 +13,19 @@ class ReportRepo:
     def __init__(self, db: Session):
         self.db = db
 
+    def get_2_year_old_reports(self):
+        cutoff = datetime.now(timezone.utc) - timedelta(days=730)
+        data = self.db.query(Report).filter(Report.retention_expires_at < cutoff).all()
+        return data
+
+    def delete_2_year_old_reports(self):
+        cutoff = datetime.now(timezone.utc) - timedelta(days=730)
+        data = (
+            self.db.query(Report).filter(Report.retention_expires_at < cutoff).delete()
+        )
+        self.db.commit()
+        return data
+
     def report_list(self, reports) -> list[dict[str, Any]]:
         return [
             {
@@ -46,7 +59,7 @@ class ReportRepo:
         else:
             status = "uploaded"
         uploaded_at = datetime.now(timezone.utc)
-        expires_at = uploaded_at + timedelta(days=365)
+        expires_at = uploaded_at + timedelta(days=730)
 
         # Use keyword arguments here:
         report_data = Report(
@@ -122,6 +135,10 @@ class ReportRepo:
                     "message_en": msg("errors", "db_failed", "en"),
                 },
             )
+
+    def delete_cloud_file(self, report_obj):
+        storage = StorageManager()
+        storage.delete_file(report=report_obj)
 
     def delete_report_by_id(
         self, request: Request, report_id, user_id
@@ -206,3 +223,34 @@ class ReportRepo:
                     "message_en": msg("errors", "db_failed", "en"),
                 },
             )
+
+    def delete_report(self, report_obj):
+        storage = StorageManager()
+
+        try:
+            # ------------------------
+            # 1. Cloud delete (safe)
+            # ------------------------
+            try:
+                storage.delete_file(report=report_obj)
+            except Exception as e:
+                # tolerate "already deleted"
+                if "NotFound" in str(e) or "404" in str(e):
+                    print(f"[INFO] File already deleted: {report_obj.file_url}")
+                else:
+                    raise
+
+            # ------------------------
+            # 2. DB delete
+            # ------------------------
+            self.db.delete(report_obj)
+            self.db.commit()
+
+        except Exception as e:
+            self.db.rollback()
+            raise e
+
+    def delete_report_retention(self, date):
+        # storage.delete_file(report=report_obj)
+        self.db.query(Report).filter(Report.uploaded_at < date).delete()
+        self.db.commit()

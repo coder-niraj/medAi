@@ -26,6 +26,7 @@ class StorageManager:
             blob.delete()
             print(f"✅ Deleted {file_name} from {self.bucket_name}")
         except Exception as e:
+
             # Check if it was already deleted or bucket is missing
             print(f"❌ Storage Deletion failed: {e}")
             raise e
@@ -45,8 +46,7 @@ class StorageManager:
         return f"gs://{self.bucket_name}/{destination_name}"
 
     def download_file(self, gs_path: str) -> bytes:
-        
-       
+
         path_without_prefix = gs_path.replace("gs://", "")
         bucket_name, blob_name = path_without_prefix.split("/", 1)
 
@@ -62,15 +62,14 @@ class StorageManager:
     def get_short_lived_url(self, blob_name: str, expires_in_hours: int = 24):
         blob = self.bucket.blob(blob_name)
         try:
-           
+
             blob.reload()
             content_type = blob.content_type
         except Exception:
             content_type = None
 
-       
         if not content_type:
-            
+
             import mimetypes
 
             content_type, _ = mimetypes.guess_type(blob_name)

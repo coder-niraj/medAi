@@ -9,9 +9,9 @@ from datetime import date, datetime
 
 
 class TriageModes(str, Enum):
-    Document_Only = ("Document",)
-    Symptom_Only = ("General",)
-    Both = "Triage"
+    Document_Only = ("document",)
+    Symptom_Only = ("general",)
+    Both = "triage"
 
 
 class Result(str, Enum):
@@ -32,8 +32,12 @@ class Status(str, Enum):
 
 
 class ChatCreationValidation(BaseModel):
-    mode: str
-    report_id: str
+    mode: TriageModes
+    report_id: Optional[str] = None
+
+
+class GuestChatCreationValidation(BaseModel):
+    mode: TriageModes
 
 
 class ChatListValidation(BaseModel):
@@ -48,7 +52,7 @@ class ChatMessageValidation(BaseModel):
 
 class ChatResponse(BaseModel):
     id: str
-    mode: str
+    mode: TriageModes
     title: str
     report_id: Optional[str]
     report_type: Optional[str]

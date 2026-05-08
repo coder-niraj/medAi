@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from tasks.index import init_pubsub
 from db.session import engine
-from db.base import Base
+from db.base_class import Base
 from helpers.index import (
     logger,
     global_exception_handler,

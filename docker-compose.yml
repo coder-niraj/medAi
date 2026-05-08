@@ -70,7 +70,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
+  scheduler:
+    build: ./app
+    container_name: medai-scheduler
+    command: python scheduler.py
+    volumes:
+      - ./app:/app
+    depends_on:
+      - pubsub
+      - db
   adminer:
     image: adminer
     container_name: medai-adminer

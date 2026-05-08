@@ -12,3 +12,253 @@
     },
     "Notes": "Sets USERS.consent_given_at and research_consent. Creates PATIENT_DEMOGRAPHICS if research_consent=true. Writes AUDIT_LOG action=CONSENT_GIVEN."
 }
+
+
+
+429  rate limit (5 uploads/day)
+
+
+
+POST /auth/seed
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+POST /auth/run
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+POST /auth/guest_run
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+POST /auth/register
+Success: 201
+Possible: 201,
+400,
+401,
+403,
+409,
+422,
+500
+POST /auth/login
+Success: 201
+Possible: 201,
+400,
+401,
+403,
+409,
+422,
+500
+POST /auth/consent
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+POST /auth/guest-consent
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+POST /auth/patient-demographics
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+Chat Endpoints (/chat)
+POST /chat/sessions
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+GET /chat/sessions
+Success: 201
+Possible: 201,
+401,
+403,
+404,
+422,
+500
+POST /chat/sessions/{session_id
+}/messages
+Success: 201
+Possible: 201,
+401,
+403,
+404,
+422,
+500
+GET /chat/sessions/{session_id
+}/messages
+Success: 201
+Possible: 201,
+401,
+403,
+404,
+422,
+500
+Health Endpoints (/health)
+GET /health/
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+Internal Endpoints (/internal)
+DELETE /internal/traces/{message_id
+}
+Success: 200
+Possible: 200,
+401,
+403,
+404,
+422,
+500
+POST /internal/ft-pipeline/run
+Success: 200
+Possible: 200,
+401,
+403,
+422,
+500
+GET /internal/ft-pipeline/stats
+Success: 200
+Possible: 200,
+401,
+403,
+422,
+500
+Reports Endpoints (/reports)
+GET /reports/
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+POST /reports/upload
+Success: 201
+Possible: 201,
+401,
+403,
+422,
+500
+GET /reports/{report_id
+}/summary
+Success: 201
+Possible: 201,
+401,
+403,
+404,
+422,
+500
+GET /reports/{report_id
+}/file
+Success: 201
+Possible: 201,
+401,
+403,
+404,
+422,
+500
+DELETE /reports/{report_id
+}
+Success: 201
+Possible: 201,
+401,
+403,
+404,
+422,
+500
+Triage Endpoints (/triage)
+POST /triage/complete/{session_id
+}
+Success: 200
+Possible: 200,
+401,
+403,
+404,
+422,
+500
+POST /triage/claim
+Success: 200
+Possible: 200,
+401,
+403,
+422,
+500
+GET /triage/results/{triage_result_id
+}
+Success: 200
+Possible: 200,
+401,
+403,
+404,
+422,
+500
+GET /triage/results
+Success: 200
+Possible: 200,
+401,
+403,
+422,
+500
+PATCH /triage/sessions/{session_id
+}/messages/{message_id
+}/feedback
+Success: 200
+Possible: 200,
+401,
+403,
+404,
+422,
+500
+Users Endpoints (users)
+GET /users/me/data-export
+Success: 200
+Possible: 200,
+401,
+403,
+422,
+500
+DELETE /users/me
+Success: 200
+Possible: 200,
+401,
+403,
+422,
+500
+
+
+
+
+
+except UserAlreadyExistsException:
+            raise HTTPException(
+                status_code=409,
+                detail={
+    "message_ar": msg("errors",
+    "already_registered",
+    "ar"),
+    "message_en": msg("errors",
+    "already_registered",
+    "en"),
+},
+            )

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
-from db.base import Base
+from db.base_class import Base
 
 
 class PatientDemographics(Base):

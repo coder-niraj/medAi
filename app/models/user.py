@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Boolean, Integer, Enum, Date
 from sqlalchemy.dialects.postgresql import UUID
-from db.base import Base
+from db.base_class import Base
 
 
 class User(Base):

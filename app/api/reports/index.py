@@ -1,5 +1,7 @@
 from typing import Any
 from fastapi import HTTPException, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 from helpers.audit_context import set_audit_state
 from helpers.msg import msg
 from DTOs.reportSchema import ReportDocumentResponse
@@ -63,7 +65,7 @@ class ReportsController:
 
             mime = magic.from_buffer(content, mime=True)
             allowed = ["application/pdf", "image/jpeg", "image/png"]
-            print("+++++++++++++++++++++ ")
+
             if mime not in allowed:
 
                 set_audit_state(
@@ -97,7 +99,10 @@ class ReportsController:
             data = json.dumps(message_payload).encode("utf-8")
 
             self.publisher.publish(self.topic_path, data)
-            return file_url
+            if file_url.status == "image_only":
+                return JSONResponse(status_code=202, content=jsonable_encoder(file_url))
+            else:
+                return file_url
         except HTTPException:
             raise
         except Exception as e:

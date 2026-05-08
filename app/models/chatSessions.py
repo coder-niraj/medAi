@@ -2,7 +2,8 @@ import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, DateTime, Boolean, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from db.base import Base
+from db.base_class import Base
+
 
 class ChatSession(Base):
     __tablename__ = "chat_sessions"
@@ -12,23 +13,20 @@ class ChatSession(Base):
 
     # user_id: UUID FK nullable (NULL for guests)
     user_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("users.id", ondelete="CASCADE"), 
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=True,
-        index=True
+        index=True,
     )
 
     # report_id: UUID FK nullable (Specific to document mode)
     report_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("reports.id", ondelete="SET NULL"), 
-        nullable=True
+        UUID(as_uuid=True), ForeignKey("reports.id", ondelete="SET NULL"), nullable=True
     )
 
     # mode: document | general | triage
     mode = Column(
-        Enum("document", "general", "triage", name="session_mode_enum"),
-        nullable=False
+        Enum("document", "general", "triage", name="session_mode_enum"), nullable=False
     )
 
     # title: Auto-generated from first message
@@ -44,27 +42,26 @@ class ChatSession(Base):
     # Triage State Tracking
     triage_status = Column(
         Enum("in_progress", "completed", "abandoned", name="triage_status_enum"),
-        nullable=True
+        nullable=True,
     )
     triage_result = Column(
-        Enum("green", "yellow", "red", name="triage_result_enum"),
-        nullable=True
+        Enum("green", "yellow", "red", name="triage_result_enum"), nullable=True
     )
     triage_completed_at = Column(DateTime(timezone=True), nullable=True)
 
     # Timestamps
     created_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        nullable=False
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
-    
+
     # last_message_at: Updated on each new message for idle timeout
     last_message_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
-        nullable=False
+        nullable=False,
     )
 
     def __repr__(self):

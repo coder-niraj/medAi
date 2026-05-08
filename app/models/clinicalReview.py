@@ -1,8 +1,18 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, SmallInteger, Integer
+from sqlalchemy import (
+    Column,
+    String,
+    DateTime,
+    Boolean,
+    ForeignKey,
+    Text,
+    SmallInteger,
+    Integer,
+)
 from sqlalchemy.dialects.postgresql import UUID
-from db.base import Base
+from db.base_class import Base
+
 
 class ClinicianReview(Base):
     __tablename__ = "clinician_reviews"
@@ -12,24 +22,23 @@ class ClinicianReview(Base):
 
     # message_id: UUID FK - References CHAT_MESSAGES.id
     message_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("chat_messages.id", ondelete="CASCADE"), 
+        UUID(as_uuid=True),
+        ForeignKey("chat_messages.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     # reviewer_id: UUID FK - References USERS.id (Must be a doctor)
     reviewer_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("users.id"), 
-        nullable=False,
-        index=True
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
     )
 
     # Ratings (1-5 scale)
-    accuracy_rating = Column(SmallInteger, nullable=False) # 1=dangerous, 5=excellent
-    safety_rating = Column(SmallInteger, nullable=False)   # 1=unsafe, 5=fully safe
-    completeness_rating = Column(SmallInteger, nullable=False) # 1=missing info, 5=complete
+    accuracy_rating = Column(SmallInteger, nullable=False)  # 1=dangerous, 5=excellent
+    safety_rating = Column(SmallInteger, nullable=False)  # 1=unsafe, 5=fully safe
+    completeness_rating = Column(
+        SmallInteger, nullable=False
+    )  # 1=missing info, 5=complete
 
     # Error Tracking
     contains_error = Column(Boolean, default=False, nullable=False)
@@ -42,11 +51,11 @@ class ClinicianReview(Base):
 
     # Audit & Quality Metadata
     reviewed_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        nullable=False
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
-    
+
     # flag rushed reviews under 30 seconds
     review_duration_sec = Column(Integer, nullable=True)
 

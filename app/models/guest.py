@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import Column, String, DateTime, Boolean, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from db.base import Base
+from db.base_class import Base
 
 
 class GuestSession(Base):
@@ -37,7 +37,7 @@ class GuestSession(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-    triage_count = Column(Integer, default=0, nullable=False)
+    # triage_count = Column(Integer, default=0, nullable=False)
     # expires_at: created_at + 24 hours
     expires_at = Column(
         DateTime(timezone=True),

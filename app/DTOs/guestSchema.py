@@ -10,8 +10,8 @@ class GuestBase(BaseModel):
     guest_token: Optional[str] = None
     tos_accepted: bool
     research_consent: bool
-    age_range: str
-    gender: str
+    age_range: Optional[str]
+    gender: Optional[str]
     nationality: str
     claimed_user_id: Optional[str] = None
     tos_accepted_At: Optional[str] = None

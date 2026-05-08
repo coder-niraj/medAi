@@ -1,7 +1,8 @@
 import uuid
 from sqlalchemy import Column, String, Numeric, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from db.base import Base
+from db.base_class import Base
+
 
 class LabValue(Base):
     __tablename__ = "lab_values"
@@ -11,10 +12,10 @@ class LabValue(Base):
 
     # report_id: UUID FK - References REPORTS.id
     report_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("reports.id", ondelete="CASCADE"), 
+        UUID(as_uuid=True),
+        ForeignKey("reports.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     # panel_name: Grouping for UI (CBC, Lipid Panel, etc.)
@@ -40,16 +41,22 @@ class LabValue(Base):
     # flag: ENUM for status categorization
     flag = Column(
         Enum(
-            "normal", "low", "high", 
-            "borderline_low", "borderline_high", "critical", 
-            name="lab_flag_enum"
+            "normal",
+            "low",
+            "high",
+            "borderline_low",
+            "borderline_high",
+            "critical",
+            name="lab_flag_enum",
         ),
         nullable=False,
-        default="normal"
+        default="normal",
     )
 
     # extracted_language: Language of test_name in report
     extracted_language = Column(String(10), nullable=False, default="en")
 
     def __repr__(self):
-        return f"<LabValue(test={self.test_name}, value={self.value}, flag={self.flag})>"
+        return (
+            f"<LabValue(test={self.test_name}, value={self.value}, flag={self.flag})>"
+        )

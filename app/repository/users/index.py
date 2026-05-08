@@ -4,6 +4,7 @@ import uuid
 from fastapi import HTTPException, Request
 from sqlalchemy.orm import Session
 from sympy import true
+from helpers.exception import DatabaseException, UserAlreadyExistsException
 from helpers.audit_context import set_audit_state
 from helpers.msg import msg
 from models import triage
@@ -11,6 +12,7 @@ from models.user import User
 from models.patient import PatientDemographics
 from DTOs.userSchema import ResearchConsent, UserCreate, UserDemographics
 from services.encryption_service import AES256Service
+from sqlalchemy.exc import IntegrityError
 
 
 class UserRepo:
@@ -124,9 +126,9 @@ class UserRepo:
         )
         return {"demographics": "created"}
 
-    def create_user(self, firebase_uid: str, firbase_email: str, user_dto: UserCreate):
+    def create_user(self, firebase_uid: str, firebase_email: str, user_dto: UserCreate):
         try:
-            email_enc = AES256Service.encrypt(firbase_email)
+            email_enc = AES256Service.encrypt(firebase_email)
             dob_enc = AES256Service.encrypt(user_dto.dob)
 
             user_model_obj = User(
@@ -146,17 +148,18 @@ class UserRepo:
             self.db.commit()
             self.db.refresh(user_model_obj)
             return user_model_obj
+        except IntegrityError as e:
+            self.db.rollback()
+            # Log error here
+            print(e)
+            if "firebase_uid" in str(e):
+                raise UserAlreadyExistsException()
+            raise DatabaseException()
         except Exception as e:
             self.db.rollback()
             # Log error here
             print(e)
-            raise HTTPException(
-                status_code=500,
-                detail={
-                    "message_ar": msg("errors", "db_failed", "ar"),
-                    "message_en": msg("errors", "db_failed", "en"),
-                },
-            )
+            raise DatabaseException()
 
     def get_user_by_firebase_uid(self, firebase_uid):
         return self.db.query(User).filter(User.firebase_uid == firebase_uid).first()

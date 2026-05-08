@@ -1,8 +1,9 @@
 import uuid
 from sqlalchemy import Column, String, Text, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from pgvector.sqlalchemy import Vector # Requires pgvector python package
-from db.base import Base
+from pgvector.sqlalchemy import Vector  # Requires pgvector python package
+from db.base_class import Base
+
 
 class ReportEmbedding(Base):
     __tablename__ = "embeddings"
@@ -13,10 +14,10 @@ class ReportEmbedding(Base):
     # report_id: UUID FK
     # Scopes search to one patient's report (Never global)
     report_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("reports.id", ondelete="CASCADE"), 
+        UUID(as_uuid=True),
+        ForeignKey("reports.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     # chunk_text: AES-256 encrypted PHI

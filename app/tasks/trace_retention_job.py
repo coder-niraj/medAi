@@ -1,4 +1,2 @@
-
-class NightlyPipeline:
-    def __init__(self):
-        pass
+def run():
+    print("llm traces")

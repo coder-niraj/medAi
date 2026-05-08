@@ -16,13 +16,22 @@ class UserRole(str, Enum):
     admin = "admin"
 
 
+class UserRegion(str, Enum):
+    riyadh: "riyadh"  # type: ignore
+    jeddah: "jeddah"  # type: ignore
+    eastern_province: "eastern_province"  # type: ignore
+    dubai: "dubai"  # type: ignore
+    abu_dhabi: "abu_dhabi"  # type: ignore
+    other: "other"  # type: ignore
+
+
 class UserDemographics(BaseModel):
     id: Optional[str] = None
     user_id: Optional[str] = None
     age_range: str
     gender: str
     nationality: str
-    region: str
+    region: UserRegion
     health_literacy: str
     chronic_conditions: list
     consent_for_research: Optional[str] = None
@@ -66,7 +75,7 @@ class UserCreate(UserBase):
     name: Optional[str] = None
     dob: Optional[str]
     firebase_id_token: str
-    firebae_id: Optional[str] = None
+    firebase_id: Optional[str] = None
 
 
 class UserRegisterValidation(BaseModel):
@@ -75,7 +84,7 @@ class UserRegisterValidation(BaseModel):
     preferred_language: str = "en"
     role: UserRole = UserRole.patient
     firebase_id_token: str
-    firebae_id: Optional[str] = None
+    firebase_id: Optional[str] = None
 
 
 class ResearchConsent(BaseModel):

@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, Header, Request
+from fastapi import APIRouter, Depends, Header, Request, status
 from sqlalchemy.orm import Session
 from api.auth.index import AuthController
+from tasks.ft_curation_job import run
+from tasks.cleanup_job import run as guest_run
 from services.seeding.index import run_all_seeds
 from middlewares.auth import get_current_user, get_demographic_patient
 from DTOs.userSchema import (
@@ -21,13 +23,23 @@ def get_auth_controller(db: Session = Depends(get_DB)):
     return AuthController(db)
 
 
-@router.post("/seed")
+@router.post("/seed", status_code=status.HTTP_201_CREATED)
 def register():
     run_all_seeds()
     return "seeded"
 
 
-@router.post("/register")
+@router.post("/run", status_code=status.HTTP_201_CREATED)
+def register():
+    run()
+
+
+@router.post("/guest_run", status_code=status.HTTP_201_CREATED)
+def register():
+    return guest_run()
+
+
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(
     request: Request,
     body: UserRegisterValidation,
@@ -36,10 +48,10 @@ def register(
     return controller.register(request, user_dto=body)
 
 
-@router.post("/login")
+@router.post("/login", status_code=status.HTTP_200_OK)
 def login(
     request: Request,
-    body: AuthRequest = None,
+    body: AuthRequest,
     controller: AuthController = Depends(get_auth_controller),
 ):
     return controller.login(
@@ -48,7 +60,7 @@ def login(
     )
 
 
-@router.post("/consent")
+@router.post("/consent", status_code=status.HTTP_200_OK)
 def consent(
     request: Request,
     body: ResearchConsent,
@@ -58,7 +70,7 @@ def consent(
     return controller.consent(request, body, token_data)
 
 
-@router.post("/guest-consent")
+@router.post("/guest-consent", status_code=status.HTTP_201_CREATED)
 # @limiter.limit("10/minute")
 def guest_consent(
     request: Request,
@@ -68,7 +80,7 @@ def guest_consent(
     return controller.guest_consent(request, guest_data=body)
 
 
-@router.post("/patient-demographics")
+@router.post("/patient-demographics", status_code=status.HTTP_201_CREATED)
 def demographics(
     request: Request,
     body: UserDemographics,

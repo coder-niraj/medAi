@@ -2,6 +2,7 @@ from typing import Any, Tuple
 
 from fastapi import HTTPException, Request, status
 
+from helpers.exception import DatabaseException, UserAlreadyExistsException
 from services.encryption_service import AES256Service
 from helpers.audit_context import set_audit_state
 from helpers.msg import msg
@@ -69,7 +70,7 @@ class UserService:
                 resource_id=None,
             )
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=401,
                 detail={
                     "message_ar": msg("errors", "firebase_invalid", "ar"),
                     "message_en": msg("errors", "firebase_invalid", "en"),
@@ -81,16 +82,12 @@ class UserService:
         self, request: Request, data: UserRegisterValidation
     ) -> UserRegisterDTO:
         fb_uid, fb_email = self._get_firebase_user(request, data.firebase_id_token)
-        exists = self.user_repo.get_user_by_firebase_uid(fb_uid)
-        if exists:
-            request.state.user_id = exists.id
-            set_audit_state(
-                request,
-                action="LOGIN",
-                resource_type="user_profile",
-                outcome="FAILURE",
-                resource_id=exists.id,
+        try:
+            user_obj = self.user_repo.create_user(
+                firebase_uid=fb_uid, firebase_email=fb_email, user_dto=data
             )
+
+        except UserAlreadyExistsException:
             raise HTTPException(
                 status_code=409,
                 detail={
@@ -98,20 +95,23 @@ class UserService:
                     "message_en": msg("errors", "already_registered", "en"),
                 },
             )
-        else:
-
-            user_obj = self.user_repo.create_user(
-                firebase_uid=fb_uid, firbase_email=fb_email, user_dto=data
+        except DatabaseException:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message_ar": msg("errors", "db_failed", "ar"),
+                    "message_en": msg("errors", "db_failed", "en"),
+                },
             )
-            request.state.user_id = user_obj.id
-            set_audit_state(
-                request,
-                action="LOGIN",
-                resource_type="user_profile",
-                outcome="SUCCESS",
-                resource_id=user_obj.id,
-            )
-            return self.map_model_to_dto_register(user_obj)
+        request.state.user_id = user_obj.id
+        set_audit_state(
+            request,
+            action="LOGIN",
+            resource_type="user_profile",
+            outcome="SUCCESS",
+            resource_id=user_obj.id,
+        )
+        return self.map_model_to_dto_register(user_obj)
 
     def login(self, request: Request, data: UserCreate) -> UserLoginDTO:
         fb_uid, fb_email = self._get_firebase_user(request, data.firebase_id_token)
@@ -136,10 +136,10 @@ class UserService:
                 resource_id=None,
             )
             raise HTTPException(
-                status_code=409,
+                status_code=401,
                 detail={
-                    "message_ar": msg("errors", "registration_failed", "ar"),
-                    "message_en": msg("errors", "registration_failed", "en"),
+                    "message_ar": msg("errors", "not_registered", "ar"),
+                    "message_en": msg("errors", "not_registered", "en"),
                 },
             )
 
@@ -163,7 +163,7 @@ class UserService:
                 resource_id=user_id,
             )
             raise HTTPException(
-                status_code=400,
+                status_code=403,
                 detail={
                     "message_ar": msg("errors", "tos_required", "ar"),
                     "message_en": msg("errors", "tos_required", "en"),
@@ -178,10 +178,8 @@ class UserService:
             if consent_result.get("result"):
                 payload = {
                     "id": token_data.get("id"),
-                    # "email_enc": token_data.get("id"),
                     "preferred_language": token_data.get("preferred_language"),
                     "consent_given_at": consent_result.get("consent_given_at"),
-                    # "research_consent": consent_dto.research_consent,
                     "firebase_uid": token_data.get("firebase_uid"),
                     "triage_count": token_data.get("triage_count"),
                 }
@@ -206,7 +204,7 @@ class UserService:
                     resource_id=user_id,
                 )
                 raise HTTPException(
-                    status_code=404,
+                    status_code=500,
                     detail=consent_result.get(
                         "message_ar",
                         msg("errors", "update_failed", "ar"),

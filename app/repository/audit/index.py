@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
+from helpers.exception import DatabaseException
 from helpers.msg import msg
 from models.auditLogs import AuditHook
 from DTOs.auditSchema import AuditDTO
@@ -27,4 +28,4 @@ class AuditRepo:
             self.db.commit()
         except Exception as e:
             self.db.rollback()
-            print(e)
+            raise DatabaseException()

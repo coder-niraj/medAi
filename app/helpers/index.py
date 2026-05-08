@@ -22,7 +22,6 @@ load_dotenv(dotenv_path=ENV_PATH)
 security_scheme = HTTPBearer()
 
 
-
 def create_access_token(data: dict):
     to_encode = data.copy()
     to_encode_refresh = data.copy()
@@ -110,7 +109,7 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> JSONRe
 
 
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    
+
     print(f"System Error: {str(exc)}")
 
     return JSONResponse(
@@ -121,12 +120,10 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
                 "code": "INTERNAL_SERVER_ERROR",
                 "message_en": msg("errors", "unexpected_error_occured", "en"),
                 "message_ar": msg("errors", "unexpected_error_occured", "ar"),
-                "trace_id": "req_audit_log_id",  
+                "trace_id": "req_audit_log_id",
             },
         },
     )
-
-
 
 
 # raise HTTPException(status_code=403, detail={

@@ -63,7 +63,7 @@ class ReportDocumentResponse(BaseModel):
     Message_ar: Optional[str] = None
 
 
-class ReportUrlRepsonse(BaseModel):
+class ReportUrlResponse(BaseModel):
     file_url: str
     expires_at: datetime
     content_type: Optional[str] = None

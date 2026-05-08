@@ -1,6 +1,6 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
 from api.reports.index import ReportsController
 from db.session import get_DB
 from middlewares.auth import consent_gate
@@ -13,7 +13,7 @@ def get_auth_controller(db: Session = Depends(get_DB)):
     return ReportsController(db)
 
 
-@router.get("/")
+@router.get("/", status_code=status.HTTP_200_OK)
 async def list_reports(
     request: Request,
     token_data: dict = Depends(consent_gate),
@@ -22,7 +22,7 @@ async def list_reports(
     return await controller.get_all_reports(request, user_data=token_data)
 
 
-@router.post("/upload")
+@router.post("/upload", status_code=status.HTTP_200_OK)
 async def upload_report(
     request: Request,
     file: UploadFile = File(...),
@@ -36,12 +36,12 @@ async def upload_report(
     )
 
 
-@router.get("/{report_id}/summary")
+@router.get("/{report_id}/summary", status_code=status.HTTP_200_OK)
 def get_report_summery():
     ReportsController.ai_generated_summary_report()
 
 
-@router.get("/{report_id}/file")
+@router.get("/{report_id}/file", status_code=status.HTTP_200_OK)
 def get_limited_time_url(
     request: Request,
     report_id: str,
@@ -53,7 +53,7 @@ def get_limited_time_url(
     )
 
 
-@router.delete("/{report_id}")
+@router.delete("/{report_id}", status_code=status.HTTP_200_OK)
 async def delete_file(
     request: Request,
     report_id: str,

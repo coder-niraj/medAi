@@ -1,6 +1,7 @@
 from typing import Any
-from fastapi import Request
+from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
+from helpers.msg import msg
 from repository.guest.index import GuestRepo
 from services.guest.index import GuestService
 from repository.users.index import UserRepo
@@ -77,4 +78,23 @@ class AuthController:
         return {"access_token": jwt, "consent_given_at": given_at}
 
     def guest_consent(self, request: Request, guest_data: GuestBase) -> GuestResponse:
-        return self.guest_service.get_guest_session(request, guest_data)
+        if not guest_data.age_range:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={
+                    "message_ar": msg("errors", "age_range_required", "ar"),
+                    "message_en": msg("errors", "age_range_required", "en"),
+                },
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        elif not guest_data.gender:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail={
+                    "message_ar": msg("errors", "gender_required", "ar"),
+                    "message_en": msg("errors", "gender_required", "en"),
+                },
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        else:
+            return self.guest_service.get_guest_session(request, guest_data)

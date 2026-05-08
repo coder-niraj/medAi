@@ -1,8 +1,6 @@
 # db/base.py
-from sqlalchemy.orm import declarative_base
 
-Base = declarative_base()
-
+from db.base_class import Base
 from models.user import User
 from models.patient import PatientDemographics
 from models.reports import Report

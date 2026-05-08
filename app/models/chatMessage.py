@@ -1,8 +1,19 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Enum, ForeignKey, Text, SmallInteger
+from sqlalchemy import (
+    Column,
+    String,
+    DateTime,
+    Boolean,
+    Integer,
+    Enum,
+    ForeignKey,
+    Text,
+    SmallInteger,
+)
 from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from db.base import Base
+from db.base_class import Base
+
 
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
@@ -12,17 +23,14 @@ class ChatMessage(Base):
 
     # session_id: UUID FK - Links to chat_sessions
     session_id = Column(
-        UUID(as_uuid=True), 
-        ForeignKey("chat_sessions.id", ondelete="CASCADE"), 
+        UUID(as_uuid=True),
+        ForeignKey("chat_sessions.id", ondelete="CASCADE"),
         nullable=False,
-        index=True
+        index=True,
     )
 
     # role: user | assistant
-    role = Column(
-        Enum("user", "assistant", name="message_role_enum"), 
-        nullable=False
-    )
+    role = Column(Enum("user", "assistant", name="message_role_enum"), nullable=False)
 
     # content_enc: AES-256 encrypted message text (PHI: High)
     content_enc = Column(Text, nullable=False)
@@ -31,16 +39,16 @@ class ChatMessage(Base):
     retrieved_chunk_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=True)
 
     # Monitoring & Costs
-    finish_reason = Column(String(50), nullable=True) # STOP | MAX_TOKENS | etc.
+    finish_reason = Column(String(50), nullable=True)  # STOP | MAX_TOKENS | etc.
     prompt_tokens = Column(Integer, default=0, nullable=False)
     completion_tokens = Column(Integer, default=0, nullable=False)
 
     # User Feedback
-    patient_rating = Column(SmallInteger, nullable=True) # 1-5 stars
+    patient_rating = Column(SmallInteger, nullable=True)  # 1-5 stars
     patient_rating_at = Column(DateTime(timezone=True), nullable=True)
     user_feedback_flag = Column(
         Enum("helpful", "wrong", "unsafe", "too_vague", name="feedback_flag_enum"),
-        nullable=True
+        nullable=True,
     )
 
     # Guardrails & Safety
@@ -49,9 +57,11 @@ class ChatMessage(Base):
     fallback_used = Column(Boolean, default=False, nullable=False)
 
     # Language & Classification
-    response_language = Column(String(5), nullable=True) # ar | en
-    question_language = Column(String(5), nullable=True) # ar | en
-    question_category = Column(String(100), nullable=True) # lab_explanation, trend, etc.
+    response_language = Column(String(5), nullable=True)  # ar | en
+    question_language = Column(String(5), nullable=True)  # ar | en
+    question_category = Column(
+        String(100), nullable=True
+    )  # lab_explanation, trend, etc.
 
     # Fine-tuning Pipeline Metadata (Computed Nightly)
     ft_eligible = Column(Boolean, nullable=True)
@@ -59,10 +69,10 @@ class ChatMessage(Base):
 
     # Audit Timestamp with Millisecond Precision
     created_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
-        index=True
+        index=True,
     )
 
     def __repr__(self):

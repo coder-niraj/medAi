@@ -7,7 +7,11 @@ from helpers.msg import msg
 from repository.reports.index import ReportRepo
 from fastapi import File, HTTPException, Request, status
 from utils.firebase import verify_token
-from DTOs.reportSchema import ReportDocumentResponse, ReportSchema, ReportUrlRepsonse
+from DTOs.reportSchema import (
+    ReportDocumentResponse,
+    ReportSchema,
+    ReportUrlResponse,
+)
 from services.storage_service import StorageManager
 
 
@@ -57,7 +61,7 @@ class ReportServices:
             outcome="SUCCESS",
             resource_id=report_id,
         )
-        return ReportUrlRepsonse(
+        return ReportUrlResponse(
             file_url=file_obj.get("url"),
             content_type=file_obj.get("content_type"),
             display_name=report_data.display_name,
