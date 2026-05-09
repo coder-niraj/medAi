@@ -329,46 +329,34 @@ PDPL and the UAE Federal Decree-Law No. 45 of 2021, and data residency within Go
 ###
 
 
+# 🧠 AI Prompt Architecture
+
+This document explains the internal prompt structure used by the AI assistant.
+
+The prompt is divided into **4 logical zones**:
+
+---
+
+# 📦 Prompt Layout
+
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  ZONE 1 — System Prompt                                 │
 │  Instructions to AI. Patient never sees this.           │
-│  CTO writes it. Developer fetches it from Secret Mgr.  │
-│                                                         │
-│  Example:                                               │
-│  "You are a medical AI assistant. You explain lab       │
-│   results in simple language. You NEVER diagnose.       │
-│   You NEVER prescribe medication. Every response        │
-│   must end with: Please discuss with your doctor.       │
-│   Respond in the same language as the patient."         │
+│  CTO writes it. Developer fetches it from Secret Mgr.   │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
 │  ZONE 2 — Retrieved Context (RAG chunks)                │
-│  The actual document content retrieved from embeddings. │
-│  This is what was extracted, chunked, and embedded      │
-│  at upload time. Empty for triage/general mode.         │
-│                                                         │
-│  Example:                                               │
-│  "CBC Panel - Hemoglobin: 9.2 g/dL (LOW)               │
-│   Reference: 13.5-17.5. WBC: 11.2 (HIGH)               │
-│   Reference: 4.5-11.0..."                               │
+│  Extracted document content from embeddings/vector DB.  │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
 │  ZONE 3 — Conversation History                          │
-│  Last 6 turns of the chat so AI remembers context.      │
-│                                                         │
-│  Example:                                               │
-│  User: "What does my hemoglobin mean?"                  │
-│  AI:   "Your hemoglobin is low which means..."          │
-│  User: "Is that dangerous?"                             │
-│  AI:   "It depends on your symptoms..."                 │
+│  Last N chat turns for memory/context continuity.       │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
 │  ZONE 4 — Current User Message                          │
-│  What the patient just typed RIGHT NOW.                 │
-│                                                         │
-│  Example:                                               │
-│  "What should I eat to improve my iron levels?"         │
+│  The latest user input sent to the model.               │
 └─────────────────────────────────────────────────────────┘
