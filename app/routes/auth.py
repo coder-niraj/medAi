@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, Header, Request, status
-from sqlalchemy.orm import Session
+from helpers.msg import msg
+from middlewares.idempotency import guest_protection_check
+from fastapi import APIRouter, Depends, Header, Request, status, HTTPException  # type: ignore
+from sqlalchemy.orm import Session  # type: ignore
 from api.auth.index import AuthController
 from tasks.ft_curation_job import run
 from tasks.cleanup_job import run as guest_run
@@ -23,22 +25,7 @@ def get_auth_controller(db: Session = Depends(get_DB)):
     return AuthController(db)
 
 
-@router.post("/seed", status_code=status.HTTP_201_CREATED)
-def register():
-    run_all_seeds()
-    return "seeded"
-
-
-@router.post("/run", status_code=status.HTTP_201_CREATED)
-def register():
-    run()
-
-
-@router.post("/guest_run", status_code=status.HTTP_201_CREATED)
-def register():
-    return guest_run()
-
-
+@limiter.limit("60/minute")
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(
     request: Request,
@@ -48,6 +35,7 @@ def register(
     return controller.register(request, user_dto=body)
 
 
+@limiter.limit("60/minute")
 @router.post("/login", status_code=status.HTTP_200_OK)
 def login(
     request: Request,
@@ -60,6 +48,7 @@ def login(
     )
 
 
+@limiter.limit("60/minute")
 @router.post("/consent", status_code=status.HTTP_200_OK)
 def consent(
     request: Request,
@@ -71,15 +60,26 @@ def consent(
 
 
 @router.post("/guest-consent", status_code=status.HTTP_201_CREATED)
-# @limiter.limit("10/minute")
-def guest_consent(
+async def guest_consent(
     request: Request,
     body: GuestBase,
     controller: AuthController = Depends(get_auth_controller),
 ):
-    return controller.guest_consent(request, guest_data=body)
+    if guest_protection_check(request=request):
+
+        return controller.guest_consent(request, guest_data=body)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "message_ar": msg("errors", "Free_Triage_Already_Claimed", "ar"),
+                "message_en": msg("errors", "Free_Triage_Already_Claimed", "en"),
+            },
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
+@limiter.limit("60/minute")
 @router.post("/patient-demographics", status_code=status.HTTP_201_CREATED)
 def demographics(
     request: Request,

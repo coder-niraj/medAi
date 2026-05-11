@@ -88,6 +88,13 @@ class UserService:
             )
 
         except UserAlreadyExistsException:
+            set_audit_state(
+                request,
+                action="LOGIN",
+                resource_type="user_profile",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=409,
                 detail={
@@ -96,6 +103,13 @@ class UserService:
                 },
             )
         except DatabaseException:
+            set_audit_state(
+                request,
+                action="LOGIN",
+                resource_type="user_profile",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=500,
                 detail={

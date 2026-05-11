@@ -4,6 +4,7 @@ import uuid
 from fastapi import HTTPException, Request
 
 from DTOs.chatMessage import ChatMessageObject
+from helpers.audit_context import set_audit_state
 from helpers.exception import (
     demographicsNotFound,
     reportIdNotFound,
@@ -22,8 +23,16 @@ class ChatService:
     def create_chat_session(self, request, data, user_id):
         request.state.user_id = user_id
         try:
-            return self.chat_repo.create_chat_session(data, user_id)
+
+            return self.chat_repo.create_chat_session(request, data, user_id)
         except demographicsNotFound as e:
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -32,6 +41,13 @@ class ChatService:
                 },
             )
         except reportIdNotFound as e:
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -40,6 +56,13 @@ class ChatService:
                 },
             )
         except reportNotFound as e:
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=400,
                 detail={
@@ -48,6 +71,13 @@ class ChatService:
                 },
             )
         except reportNotAllowed as e:
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=400,
                 detail={
@@ -58,17 +88,20 @@ class ChatService:
 
     def create_guest_chat_session(self, request, guest_token):
         request.state.user_id = guest_token
-        return self.chat_repo.create_guest_chat_session(guest_token)
+        return self.chat_repo.create_guest_chat_session(request, guest_token)
 
     def get_list_session(self, request, offset, limit, user_id):
-        return self.chat_repo.list_chat_sessions(user_id, offset, limit)
+        request.state.user_id = user_id
+        return self.chat_repo.list_chat_sessions(request, user_id, offset, limit)
 
     def get_all_chat_in_session(self, request, session_id, user_id):
-        return self.chat_repo.get_session_messages(session_id, user_id)
+        request.state.user_id = user_id
+        return self.chat_repo.get_session_messages(request, session_id, user_id)
 
     async def send_session_message(
         self, request: Request, message, session_id, user_id
     ):
+        request.state.user_id = user_id
         user_message_block = ChatMessageObject(
             id=uuid.uuid4(),
             session_id=session_id,
@@ -91,10 +124,10 @@ class ChatService:
             ft_excluded_reason=None,
             created_at=datetime.now(timezone.utc),
         )
-        session_row = self.chat_repo.get_session(session_id)
+        session_row = self.chat_repo.get_session(request, session_id)
         detected_panels = []
         if session_row.report_id:
-            report_row = self.chat_repo.get_report(session_row.report_id)
+            report_row = self.chat_repo.get_report(request, session_row.report_id)
             if report_row:
                 cardiac_urgency_flag = report_row.cardiac_urgency_flag or False
                 detected_panels = report_row.detected_panels or []
@@ -137,6 +170,13 @@ class ChatService:
         )
         message_response = self.chat_repo.add_message(
             request, user_message_block, assistant_message_block
+        )
+        set_audit_state(
+            request,
+            action="CHAT_READ",
+            resource_type="chat_message",
+            outcome="SUCCESS",
+            resource_id=None,
         )
         return {
             "user": self.chat_repo.to_dict(message_response.get("user")),

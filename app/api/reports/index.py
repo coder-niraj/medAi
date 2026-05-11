@@ -2,6 +2,7 @@ from typing import Any
 from fastapi import HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from middlewares.idempotency import Idempotency_add
 from helpers.audit_context import set_audit_state
 from helpers.msg import msg
 from DTOs.reportSchema import ReportDocumentResponse
@@ -92,6 +93,7 @@ class ReportsController:
                 outcome="SUCCESS",
                 resource_id=file_url.report_id,
             )
+
             message_payload = {
                 "user_id": str(user_id),
                 "file_url": str(file_url.report_id),
@@ -99,6 +101,11 @@ class ReportsController:
             data = json.dumps(message_payload).encode("utf-8")
 
             self.publisher.publish(self.topic_path, data)
+            Idempotency_add(
+                header_id=request.headers.get("Idempotency-Key"),
+                response=file_url,
+                code=200,
+            )
             if file_url.status == "image_only":
                 return JSONResponse(status_code=202, content=jsonable_encoder(file_url))
             else:

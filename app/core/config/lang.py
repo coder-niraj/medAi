@@ -69,6 +69,18 @@ MESSAGES = {
             "en": "Database transaction failed.",
             "ar": "فشلت معاملة قاعدة البيانات.",
         },
+        "Idempotency_key_required": {
+            "en": "Idempotency key required.",
+            "ar": "مفتاح التكرار مطلوب",
+        },
+        "Free_Triage_Already_Claimed": {
+            "en": "Your free session is still active. Create an account to continue.",
+            "ar": "لا تزال جلستك المجانية فعّالة. أنشئ حسابًا للمتابعة.",
+        },
+        "Device_Model_Id_required": {
+            "en": "Device Model Id required.",
+            "ar": "مطلوب معرف طراز الجهاز",
+        },
         "operation_failed": {"en": "Operation failed.", "ar": "فشلت العملية."},
         "already_registered": {"en": "Already registered.", "ar": "مسجل بالفعل."},
         "not_registered": {

@@ -1,6 +1,7 @@
 from typing import Any
 from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
+from helpers.audit_context import set_audit_state
 from helpers.msg import msg
 from repository.guest.index import GuestRepo
 from services.guest.index import GuestService
@@ -79,6 +80,13 @@ class AuthController:
 
     def guest_consent(self, request: Request, guest_data: GuestBase) -> GuestResponse:
         if not guest_data.age_range:
+            set_audit_state(
+                request,
+                action="LOGIN",
+                resource_type="user_profile",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={
@@ -88,6 +96,13 @@ class AuthController:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         elif not guest_data.gender:
+            set_audit_state(
+                request,
+                action="LOGIN",
+                resource_type="user_profile",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail={

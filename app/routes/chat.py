@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status  # type: ignore
 from api.chat.index import ChatController
 from DTOs.chatSchema import (
     ChatCreationValidation,
@@ -6,15 +6,21 @@ from DTOs.chatSchema import (
     ChatMessageValidation,
 )
 from DTOs.userSchema import ResearchConsent
+from middlewares.consent_gate import consent_gate
 from db.session import get_DB
-from middlewares.auth import consent_gate, session_gate
-from sqlalchemy.orm import Session
+from middlewares.auth import session_gate
+from sqlalchemy.orm import Session  # type: ignore
+from middlewares.rate_limiter import limiter
 
 router = APIRouter(prefix="/chat")
 
 
 def get_auth_controller(db: Session = Depends(get_DB)):
     return ChatController(db)
+
+
+def get_user_id_from_token(request: Request) -> str:
+    return request.state.user_id
 
 
 # * create chat session
@@ -41,6 +47,7 @@ def sessions(
 
 
 # * send message in session
+@limiter.limit("10/minute", key_func=get_user_id_from_token)
 @router.post("/sessions/{session_id}/messages", status_code=status.HTTP_201_CREATED)
 async def send_session_message(
     request: Request,

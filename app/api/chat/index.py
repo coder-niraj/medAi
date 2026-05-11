@@ -1,6 +1,7 @@
 from fastapi import HTTPException, Request, status
 
 from DTOs.chatSchema import ChatCreationValidation, ChatListValidation
+from helpers.audit_context import set_audit_state
 from helpers.msg import msg
 from repository.chat.index import ChatRepo
 from services.chat.index import ChatService
@@ -17,6 +18,13 @@ class ChatController:
     ):
         if token_data.get("is_guest"):
             if chat_dto.mode != "triage":
+                set_audit_state(
+                    request,
+                    action="CHAT_READ",
+                    resource_type="chat_message",
+                    outcome="FAILURE",
+                    resource_id=None,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail={

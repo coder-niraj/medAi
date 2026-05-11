@@ -13,6 +13,7 @@ from DTOs.chatSchema import (
 from sqlalchemy.orm import Session
 
 from DTOs.chatMessage import ChatMessageObject
+from helpers.audit_context import set_audit_state
 from helpers.exception import (
     demographicsNotFound,
     reportIdNotFound,
@@ -54,7 +55,7 @@ class ChatRepo:
             )
         return result
 
-    def create_chat_session(self, data: ChatCreationValidation, user_id):
+    def create_chat_session(self, request, data: ChatCreationValidation, user_id):
         try:
             report_id = None
             if data.mode == "triage":
@@ -101,20 +102,41 @@ class ChatRepo:
             self.db.add(chat_data)
             self.db.commit()
             self.db.refresh(chat_data)
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=chat_data.id,
+            )
             return chat_data
         except Exception as e:
             self.db.rollback()
             print(e)
             raise reportNotFound()
 
-    def get_session(self, session_id):
+    def get_session(self, request, session_id):
         session_obj = (
             self.db.query(ChatSession).filter(ChatSession.id == session_id).first()
         )
+        set_audit_state(
+            request,
+            action="CHAT_READ",
+            resource_type="chat_message",
+            outcome="SUCCESS",
+            resource_id=session_id,
+        )
         return session_obj
 
-    def get_report(self, report_id):
+    def get_report(self, request, report_id):
         report_obj = self.db.query(Report).filter(Report.id == report_id).first()
+        set_audit_state(
+            request,
+            action="CHAT_READ",
+            resource_type="chat_message",
+            outcome="SUCCESS",
+            resource_id=report_id,
+        )
         return report_obj
 
     def to_dict(self, obj):
@@ -184,7 +206,7 @@ class ChatRepo:
         self.db.refresh(assistant_message)
         return {"user": user_message, "assistant": assistant_message}
 
-    def list_chat_sessions(self, user_id, offset, limit, mode=None):
+    def list_chat_sessions(self, request, user_id, offset, limit, mode=None):
         try:
             query = (
                 self.db.query(
@@ -220,10 +242,24 @@ class ChatRepo:
                 query = query.filter(ChatSession.mode == mode)
 
             report_data_list = query.all()
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="SUCCESS",
+                resource_id=None,
+            )
             return self.report_data_list(chat_sessions=report_data_list)
 
         except Exception as e:
             self.db.rollback()
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             print(e)
             raise HTTPException(
                 status_code=500,
@@ -233,13 +269,36 @@ class ChatRepo:
                 },
             )
 
-    def get_session_messages(self, session_id, user_id):
-        query = (
-            self.db.query(ChatMessage)
-            .filter(ChatMessage.session_id == session_id)
-            .all()
-        )
-        return query
+    def get_session_messages(self, request, session_id, user_id):
+        try:
+            query = (
+                self.db.query(ChatMessage)
+                .filter(ChatMessage.session_id == session_id)
+                .all()
+            )
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="SUCCESS",
+                resource_id=None,
+            )
+            return query
+        except Exception as e:
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message_ar": msg("errors", "db_failed", "ar"),
+                    "message_en": msg("errors", "db_failed", "en"),
+                },
+            )
 
     def get_non_finetuned_assistant_response_messages(self):
         cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
@@ -387,7 +446,7 @@ class ChatRepo:
             grouped[key].append(message)
         return grouped
 
-    def create_guest_chat_session(self, guest_token):
+    def create_guest_chat_session(self, request, guest_token):
         try:
             existing_session = (
                 self.db.query(ChatSession)
@@ -395,6 +454,13 @@ class ChatRepo:
                 .first()
             )
             if existing_session:
+                set_audit_state(
+                    request,
+                    action="CHAT_READ",
+                    resource_type="chat_message",
+                    outcome="FAILURE",
+                    resource_id=None,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
                     detail={
@@ -403,6 +469,7 @@ class ChatRepo:
                     },
                 )
             else:
+
                 chat_data = ChatSession(
                     id=uuid.uuid4(),  # optional (auto by default)
                     user_id=None,  # guest → NULL
@@ -419,10 +486,24 @@ class ChatRepo:
                 self.db.add(chat_data)
                 self.db.commit()
                 self.db.refresh(chat_data)
+                set_audit_state(
+                    request,
+                    action="CHAT_READ",
+                    resource_type="chat_message",
+                    outcome="SUCCESS",
+                    resource_id=chat_data.id,
+                )
                 return chat_data
         except HTTPException:
             raise
         except Exception as e:
+            set_audit_state(
+                request,
+                action="CHAT_READ",
+                resource_type="chat_message",
+                outcome="FAILURE",
+                resource_id=None,
+            )
             self.db.rollback()
             raise HTTPException(
                 status_code=500,

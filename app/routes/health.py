@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, status
 from api.health.index import HealthController
 from sqlalchemy.orm import Session
-from middlewares.auth import consent_gate
+from middlewares.consent_gate import consent_gate
 from db.session import get_DB
 
 router = APIRouter(prefix="/health")
