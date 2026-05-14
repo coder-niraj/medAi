@@ -1,13 +1,14 @@
 import os
 from sqlalchemy.orm import Session
-from fastapi import  Request
+from fastapi import Request
 from repository.audit.index import AuditRepo
 from DTOs.auditSchema import AuditDTO
-from services.Audit.index import AuditService
+from services.audit.index import AuditService
 from helpers.audit_context import set_audit_state
 from db.session import get_DB, sessionLocal
 from datetime import timezone, datetime
 import uuid
+
 
 async def audit_logger_middleware(request: Request, call_next):
     # 1. Let the request pass through to the controller IMMEDIATELY
@@ -30,7 +31,7 @@ async def audit_logger_middleware(request: Request, call_next):
         resource_id = str(resource_id) if resource_id is not None else None
         db = sessionLocal()
         try:
-            print("---------------",resource_id)
+            print("---------------", resource_id)
             audit_object = AuditDTO(
                 id=uuid.uuid4(),
                 action=action,

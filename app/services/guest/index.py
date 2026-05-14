@@ -12,9 +12,6 @@ class GuestService:
         self.guest_repo = guest_repo
 
     def get_client_ip(self, request: Request) -> str:
-        # X-Forwarded-For can contain multiple IPs if multiple proxies
-        # "client_ip, proxy1_ip, proxy2_ip"
-        # Always take the first one — that's the real client
         forwarded_for = request.headers.get("X-Forwarded-For")
         if forwarded_for:
             return forwarded_for.split(",")[0].strip()

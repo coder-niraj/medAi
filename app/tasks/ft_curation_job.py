@@ -2,7 +2,7 @@ import json
 from sqlalchemy import select
 from models import user
 from models.chatMessage import ChatMessage
-from models.chatSessions import ChatSession
+from models.chatSession import ChatSession
 from services.seeding import report
 from repository.finetune.index import FineTuneRepo
 from repository.chat.index import ChatRepo

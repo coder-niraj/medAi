@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from api.internal.index import InternalController
-from app.services.seeding.index import run_all_seeds
+from services.seeding.index import run_all_seeds
 from tasks.ft_curation_job import run
 from tasks.cleanup_job import run as guest_run
 from services.seeding.index import run_all_seeds

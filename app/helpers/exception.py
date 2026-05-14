@@ -24,3 +24,15 @@ class reportNotFound(Exception):
 
 class reportNotAllowed(Exception):
     pass
+
+
+class guestNotFound(Exception):
+    pass
+
+
+class userNotFound(Exception):
+    pass
+
+
+class httpException(Exception):
+    pass

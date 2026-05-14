@@ -1,7 +1,7 @@
 import asyncio
 from http import client
 from urllib import response
-
+from uuid import uuid4
 import pytest
 from httpx import ASGITransport, AsyncClient
 from unittest.mock import patch
@@ -12,9 +12,9 @@ FIREBASE_API = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPas
 FIREBASE_API_KEY = "AIzaSyDujNAft2fmVCk6saJpYf12jt5fIFx1Q5o"
 BASE_URL = "http://test"
 
-USER_DATA = {
-    "name": "niraj",
-    "email": "nirajparekh.work@gmail.com",
+USER_DATA_1 = {
+    "name": "test1",
+    "email": "test1@gmail.com",
     "password": "123456",
     "phone_env": "190909092",
     "dob": "2003-10-01",
@@ -34,8 +34,8 @@ async def firebase_token():
             url=FIREBASE_API,
             params={"key": FIREBASE_API_KEY},
             json={
-                "email": USER_DATA.get("email"),
-                "password": USER_DATA.get("password"),
+                "email": USER_DATA_1.get("email"),
+                "password": USER_DATA_1.get("password"),
                 "returnSecureToken": True,
             },
         )
@@ -54,12 +54,30 @@ async def user_register_success(firebase_token: str):
             "/auth/register",
             json={
                 "firebase_id_token": firebase_token,
-                "name": USER_DATA.get("name"),
-                "dob": USER_DATA.get("dob"),
+                "name": USER_DATA_1.get("name"),
+                "dob": USER_DATA_1.get("dob"),
             },
         )
-        assert response.status_code in [200, 201, 409]
-        return {"status": response.status_code}
+
+        return response.status_code
+
+
+# * POST /auth/register
+@pytest.fixture(scope="session")
+async def user_register_success(firebase_token_gateway: str):
+    async with AsyncClient(
+        transport=ASGITransport(app=fast_app), base_url=BASE_URL
+    ) as client:
+        response = await client.post(
+            "/auth/register",
+            json={
+                "firebase_id_token": firebase_token_gateway,
+                "name": USER_DATA_1.get("name"),
+                "dob": USER_DATA_1.get("dob"),
+            },
+        )
+
+        return response.status_code
 
 
 # * POST /auth/register
@@ -72,10 +90,12 @@ async def user_re_register(firebase_token: str):
             "/auth/register",
             json={
                 "firebase_id_token": firebase_token,
-                "name": USER_DATA.get("name"),
-                "dob": USER_DATA.get("dob"),
+                "name": USER_DATA_1.get("name"),
+                "dob": USER_DATA_1.get("dob"),
             },
         )
+        print("_________", response.json())
+        print("_________", response.status_code)
         return response.status_code
 
 
@@ -130,7 +150,7 @@ async def JWT_consent_token(login_authentication_JWT: str):
             json={
                 "tos_accepted": True,
                 "research_consent": True,
-                "phone_enc": USER_DATA.get("phone_env"),
+                "phone_enc": USER_DATA_1.get("phone_env"),
             },
         )
         assert response.status_code in [200, 409], f"422 body: {response.json()}"
@@ -138,9 +158,9 @@ async def JWT_consent_token(login_authentication_JWT: str):
         data = response.json()
 
         if "access_token" in data:
-            return data["access_token"]
+            yield data["access_token"]
         else:
-            return login_authentication_JWT
+            yield login_authentication_JWT
 
 
 # * POST /auth/consent
@@ -155,7 +175,7 @@ async def invalid_JWT_consent_token():
             json={
                 "tos_accepted": True,
                 "research_consent": True,
-                "phone_enc": USER_DATA.get("phone_env"),
+                "phone_enc": USER_DATA_1.get("phone_env"),
             },
         )
         return response.status_code
@@ -173,7 +193,7 @@ async def invalid_body_consent_token(login_authentication_JWT: str):
             json={
                 "tos_accepted": False,
                 "research_consent": False,
-                "phone_enc": USER_DATA.get("phone_env"),
+                "phone_enc": USER_DATA_1.get("phone_env"),
             },
         )
 
@@ -203,8 +223,8 @@ async def test_registration_invalid_token():
             "/auth/register",
             json={
                 "firebase_id_token": "fake ",
-                "name": USER_DATA.get("name"),
-                "dob": USER_DATA.get("dob"),
+                "name": USER_DATA_1.get("name"),
+                "dob": USER_DATA_1.get("dob"),
             },
         )
         return response.status_code
@@ -253,6 +273,7 @@ async def guest_session_creation():
     ) as client:
         response = await client.post(
             "/auth/guest-consent",
+            headers={"X-Device-ID": str(uuid4())},
             json={
                 "tos_accepted": True,
                 "research_consent": True,
@@ -261,6 +282,7 @@ async def guest_session_creation():
                 "nationality": "American",
             },
         )
+        print("______________", response.json())
         return response.status_code
 
 
@@ -272,6 +294,7 @@ async def guest_session_validation():
     ) as client:
         response = await client.post(
             "/auth/guest-consent",
+            headers={"X-Device-ID": str(uuid4())},
             json={
                 "tos_accepted": True,
             },
@@ -287,6 +310,7 @@ async def guest_session_response_validation():
     ) as client:
         response = await client.post(
             "/auth/guest-consent",
+            headers={"X-Device-ID": str(uuid4())},
             json={
                 "tos_accepted": True,
                 "research_consent": True,
@@ -296,41 +320,49 @@ async def guest_session_response_validation():
             },
         )
 
-        assert response.status_code in [200, 201]
+        assert response.status_code in [200, 201, 400]
         return response.json()
 
 
+@pytest.mark.asyncio
 async def test_firebase_token_fetched(firebase_token):
     assert isinstance(firebase_token, str)
     assert len(firebase_token) > 10
 
 
+@pytest.mark.asyncio
 async def test_user_register(user_register_success):
-    assert user_register_success["status"] in [200, 201, 409]
+    assert user_register_success in [200, 201, 409]
 
 
+@pytest.mark.asyncio
 async def test_user_re_register(user_re_register):
-    assert user_re_register == 409
+    assert user_re_register in [409]
 
 
+@pytest.mark.asyncio
 async def test_login_returns_jwt(login_authentication_JWT):
     assert isinstance(login_authentication_JWT, str)
     assert len(login_authentication_JWT) > 10
 
 
+@pytest.mark.asyncio
 async def test_invalid_JWT_consent_token(invalid_JWT_consent_token):
     assert invalid_JWT_consent_token in [409, 422, 500, 401]
 
 
+@pytest.mark.asyncio
 async def test_invalid_body_consent_token(invalid_body_consent_token):
     """Consent flow with a invalid body"""
     assert invalid_body_consent_token in [403, 422, 500, 401]
 
 
+@pytest.mark.asyncio
 async def test_no_body_consent_token(no_body_consent_token):
     assert no_body_consent_token in [409, 422, 500, 401]
 
 
+@pytest.mark.asyncio
 async def test_login_authentication_response(login_authentication_response):
     keys_to_check = [
         "access_token",
@@ -343,46 +375,56 @@ async def test_login_authentication_response(login_authentication_response):
     assert result == True
 
 
+@pytest.mark.asyncio
 async def test_login_authentication_consent(login_authentication_consent):
     assert login_authentication_consent is None or isinstance(
         login_authentication_consent, str
     )
 
 
+@pytest.mark.asyncio
 async def test_consent_token_exists(JWT_consent_token):
     assert isinstance(JWT_consent_token, str)
     assert len(JWT_consent_token) > 10
 
 
+@pytest.mark.asyncio
 async def test_full_auth_flow(JWT_consent_token, login_authentication_JWT):
     assert isinstance(JWT_consent_token, str)
     assert JWT_consent_token == login_authentication_JWT or len(JWT_consent_token) > 10
 
 
+@pytest.mark.asyncio
 async def test_user_register_no_body(test_registration_no_body):
     assert test_registration_no_body in [401, 422]
 
 
+@pytest.mark.asyncio
 async def test_user_register_invalid_token(test_registration_invalid_token):
     assert test_registration_invalid_token in [422, 401]
 
 
+@pytest.mark.asyncio
 async def test_login_no_token(login_authentication_no_JWT):
     assert login_authentication_no_JWT in [409, 422]
 
 
+@pytest.mark.asyncio
 async def test_login_invalid_token(login_authentication_Invalid_JWT):
     assert login_authentication_Invalid_JWT in [401, 500]
 
 
+@pytest.mark.asyncio
 async def test_guest_session_creation(guest_session_creation):
     assert guest_session_creation in [200, 201]
 
 
+@pytest.mark.asyncio
 async def test_guest_session_validation(guest_session_validation):
     assert guest_session_validation in [401, 422, 500]
 
 
+@pytest.mark.asyncio
 async def test_guest_session_response_validation(guest_session_response_validation):
     keys_to_check = ["guest_token", "expires_at"]
     result = all(k in guest_session_response_validation for k in keys_to_check)

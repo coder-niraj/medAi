@@ -6,7 +6,7 @@ from models.patient import PatientDemographics
 from models.reports import Report
 from models.auditLogs import AuditHook
 from models.chatMessage import ChatMessage
-from models.chatSessions import ChatSession
+from models.chatSession import ChatSession
 from models.clinicalReview import ClinicianReview
 from models.extension import ExtensionHook
 from models.fineTuning import FineTuningExample

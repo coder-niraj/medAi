@@ -9,7 +9,7 @@ from repository.guest.index import GuestRepo
 from services.kms import KMSService
 from repository.audit.index import AuditRepo
 from DTOs.auditSchema import AuditDTO
-from services.Audit.index import AuditService
+from services.audit.index import AuditService
 from helpers.audit_context import set_audit_state
 from helpers.msg import msg
 from repository.users.index import UserRepo
@@ -265,6 +265,7 @@ def check_session_guest(request: Request, token: str):
 
                 return True
             else:
+                print("guest not ")
                 set_audit_state(
                     request,
                     action="LOGIN",

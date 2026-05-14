@@ -1,7 +1,7 @@
 # Core security files
 app/core/security/.env
 app/core/security/
-documentation/
+extra/
 # Python Bytecode
 **/__pycache__/
 *.py[cod]

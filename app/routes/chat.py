@@ -11,6 +11,7 @@ from db.session import get_DB
 from middlewares.auth import session_gate
 from sqlalchemy.orm import Session  # type: ignore
 from middlewares.rate_limiter import limiter
+from fastapi import Query
 
 router = APIRouter(prefix="/chat")
 
@@ -39,11 +40,17 @@ def sessions(
 @router.get("/sessions", status_code=status.HTTP_201_CREATED)
 def sessions(
     request: Request,
-    body: ChatListValidation,
+    mode: str | None = Query(default=None),
+    offset: int = Query(default=0),
+    limit: int = Query(default=20),
     token_data: dict = Depends(session_gate),
     controller: ChatController = Depends(get_auth_controller),
 ):
-    return controller.get_list_sessions(request, body, token_data.get("id"))
+    return controller.get_list_sessions(
+        request,
+        ChatListValidation(limit=limit, mode=mode, offset=offset),
+        token_data.get("id"),
+    )
 
 
 # * send message in session

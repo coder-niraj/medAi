@@ -14,7 +14,7 @@ from models.fineTuning import FineTuningExample
 from models.user import User
 from services.encryption_service import AES256Service
 from models.chatMessage import ChatMessage
-from models.chatSessions import ChatSession
+from models.chatSession import ChatSession
 from helpers.msg import msg
 from models.reports import Report
 

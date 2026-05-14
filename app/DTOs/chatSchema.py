@@ -9,9 +9,9 @@ from datetime import date, datetime
 
 
 class TriageModes(str, Enum):
-    Document_Only = ("document",)
-    Symptom_Only = ("general",)
-    Both = "triage"
+    document = "document"
+    general = "general"
+    triage = "triage"
 
 
 class Result(str, Enum):

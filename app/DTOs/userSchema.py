@@ -17,12 +17,12 @@ class UserRole(str, Enum):
 
 
 class UserRegion(str, Enum):
-    riyadh: "riyadh"  # type: ignore
-    jeddah: "jeddah"  # type: ignore
-    eastern_province: "eastern_province"  # type: ignore
-    dubai: "dubai"  # type: ignore
-    abu_dhabi: "abu_dhabi"  # type: ignore
-    other: "other"  # type: ignore
+    riyadh = "riyadh"  # type: ignore
+    jeddah = "jeddah"  # type: ignore
+    eastern_province = "eastern_province"  # type: ignore
+    dubai = "dubai"  # type: ignore
+    abu_dhabi = "abu_dhabi"  # type: ignore
+    other = "other"  # type: ignore
 
 
 class UserDemographics(BaseModel):

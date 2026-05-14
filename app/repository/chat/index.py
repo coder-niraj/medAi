@@ -25,7 +25,7 @@ from models.patient import PatientDemographics
 from models.user import User
 from services.encryption_service import AES256Service
 from models.chatMessage import ChatMessage
-from models.chatSessions import ChatSession
+from models.chatSession import ChatSession
 from helpers.msg import msg
 from models.reports import Report
 
@@ -56,64 +56,64 @@ class ChatRepo:
         return result
 
     def create_chat_session(self, request, data: ChatCreationValidation, user_id):
-        try:
-            report_id = None
-            if data.mode == "triage":
-                is_demo_data_Exist = (
-                    self.db.query(PatientDemographics)
-                    .filter(PatientDemographics.user_id == user_id)
-                    .first()
-                )
-                if not is_demo_data_Exist:
-                    raise demographicsNotFound()
-            if data.mode == "document":
-                if not data.report_id:
-                    raise reportIdNotFound()
-                report_data = (
-                    self.db.query(Report)
-                    .filter(
-                        Report.id == data.report_id,
-                        Report.user_id == user_id,
-                        Report.status == "ready",
-                    )
-                    .first()
-                )
-                if not report_data:
-                    raise reportNotFound()
-                report_id = report_data.id
 
-            else:
-                if data.report_id:
-                    raise reportNotAllowed()
-            chat_data = ChatSession(
-                id=uuid.uuid4(),  # optional (auto by default)
-                user_id=user_id,  # guest → NULL
-                report_id=report_id,
-                mode=data.mode,  # or "document" / "triage"
-                title=None,  # will be filled after first message
-                language="en",
-                is_guest=False,
-                guest_token=None,
-                # * Triage fields only for result
-                triage_status=None,
-                triage_result=None,
-                triage_completed_at=None,
+        report_id = None
+        print("::::::::::::::::::::: ", data.mode == "triage")
+        print("::::::::::::::::::::: ", data.mode)
+        if data.mode == "triage":
+            print("-------")
+            is_demo_data_Exist = (
+                self.db.query(PatientDemographics)
+                .filter(PatientDemographics.user_id == user_id)
+                .first()
             )
-            self.db.add(chat_data)
-            self.db.commit()
-            self.db.refresh(chat_data)
-            set_audit_state(
-                request,
-                action="CHAT_READ",
-                resource_type="chat_message",
-                outcome="FAILURE",
-                resource_id=chat_data.id,
+            if not is_demo_data_Exist:
+                print("here -------")
+                raise demographicsNotFound()
+        elif data.mode == "document":
+            if not data.report_id:
+                raise reportIdNotFound()
+            report_data = (
+                self.db.query(Report)
+                .filter(
+                    Report.id == data.report_id,
+                    Report.user_id == user_id,
+                    Report.status == "ready",
+                )
+                .first()
             )
-            return chat_data
-        except Exception as e:
-            self.db.rollback()
-            print(e)
-            raise reportNotFound()
+            if not report_data:
+                raise reportNotFound()
+            report_id = report_data.id
+
+        else:
+            if data.report_id:
+                raise reportNotAllowed()
+        chat_data = ChatSession(
+            id=uuid.uuid4(),  # optional (auto by default)
+            user_id=user_id,  # guest → NULL
+            report_id=report_id or None,
+            mode=data.mode,  # or "document" / "triage"
+            title=None,  # will be filled after first message
+            language="en",
+            is_guest=False,
+            guest_token=None,
+            # * Triage fields only for result
+            triage_status=None,
+            triage_result=None,
+            triage_completed_at=None,
+        )
+        self.db.add(chat_data)
+        self.db.commit()
+        self.db.refresh(chat_data)
+        set_audit_state(
+            request,
+            action="CHAT_READ",
+            resource_type="chat_message",
+            outcome="SUCCESS",
+            resource_id=chat_data.id,
+        )
+        return chat_data
 
     def get_session(self, request, session_id):
         session_obj = (

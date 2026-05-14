@@ -9,9 +9,11 @@ from datetime import date, datetime
 class AuditAction(str, Enum):
     upload = "UPLOAD"
     read = "READ"
+    chat_read = "CHAT_READ"
     delete = "DELETE"
     export = "EXPORT"
     login = "LOGIN"
+    triage_complete = "TRIAGE_COMPLETE"
     admin_Access = "ADMIN_ACCESS"
     consent_given = "CONSENT_GIVEN"
     research_consent = "RESEARCH_CONSENT_CHANGED"
@@ -20,7 +22,7 @@ class AuditAction(str, Enum):
 
 class AuditResource(str, Enum):
     report = "report"
-    chat_message = "chat"
+    chat_message = "chat_message"
     lab_value = "lab_values"
     user_profile = "user_profile"
     triage_result = "triage_result"

@@ -19,10 +19,10 @@ from routes.index import router
 
 from models.auditLogs import AuditHook
 from models.chatMessage import ChatMessage
-from models.chatSessions import ChatSession
+from models.chatSession import ChatSession
 from models.clinicalReview import ClinicianReview
 
-# from models.embeddings import ReportEmbedding
+from models.embeddings import ReportEmbedding
 from models.extension import ExtensionHook
 from models.fineTuning import FineTuningExample
 from models.guest import GuestSession
