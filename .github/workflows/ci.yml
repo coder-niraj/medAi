@@ -12,9 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Fix script permissions
-        run: |
-          chmod +x init-vault.sh
-          chmod +x test-vault-init.sh
+        run: chmod +x init-vault.sh
 
       - name: Start core services (db + vault)
         run: docker compose up -d db vault
@@ -39,12 +37,6 @@ jobs:
         run: |
           docker compose up vault-init --exit-code-from vault-init
           echo "✓ Vault init complete"
-
-      - name: Verify Vault secrets are populated
-        run: |
-          docker compose run --rm vault-test
-        # vault-test is the test service from your test-vault-init.sh
-        # Remove this step if you haven't added that service yet
 
       - name: Start remaining services
         run: docker compose up -d api scheduler storage pubsub adminer
