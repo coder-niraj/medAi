@@ -1,0 +1,16 @@
+name: Local-to-GitHub-Test
+on:
+  push:
+    branches: [mid-development]
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and Test
+        run: |
+          docker-compose up -d
+          sleep 20 # Wait for pgvector and Vault to wake up
+          docker-compose exec -T api pytest tests/ -v
