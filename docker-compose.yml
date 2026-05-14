@@ -41,19 +41,34 @@ services:
       timeout: 5s
       retries: 10
 
+  # vault-init:
+  #   image: hashicorp/vault:1.13.3
+  #   container_name: vault-init
+  #   volumes:
+  #     - ./init-vault.sh:/init-vault.sh # Ensure local path is correct
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     apk add --no-cache curl && 
+  #     /init-vault.sh
+  #     "
+  #   depends_on:
+  #     vault:
+  #       condition: service_healthy # <--- Wait for the healthcheck to pass
   vault-init:
     image: hashicorp/vault:1.13.3
     container_name: vault-init
     volumes:
-      - ./init-vault.sh:/init-vault.sh # Ensure local path is correct
+      - ./init-vault.sh:/init-vault.sh
     entrypoint: >
       /bin/sh -c "
-      apk add --no-cache curl && 
-      /init-vault.sh
+        apk add --no-cache curl &&
+        chmod +x /init-vault.sh &&
+        /init-vault.sh
       "
     depends_on:
       vault:
-        condition: service_healthy # <--- Wait for the healthcheck to pass
+        condition: service_healthy
+ 
   vault-test:
     image: hashicorp/vault:1.13.3
     container_name: vault-test
