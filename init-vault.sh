@@ -246,3 +246,6 @@ echo "  2. Replace Firebase credentials with real ones"
 echo "  3. Never commit .env file to git"
 echo "  4. These are LOCAL DEV keys only"
 echo ""
+
+touch /tmp/vault_ready
+echo "FLAG CREATED: Vault initialization is complete."

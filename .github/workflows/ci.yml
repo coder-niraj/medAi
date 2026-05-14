@@ -1,4 +1,5 @@
 name: Local-to-GitHub-Test
+
 on:
   push:
     branches: [mid-development]
@@ -6,11 +7,64 @@ on:
 jobs:
   run-tests:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build and Test
+      - name: Start core services (db + vault)
+        run: docker compose up -d db vault
+
+      - name: Wait for DB to be healthy
         run: |
-          docker compose up -d
-          sleep 20 # Wait for pgvector and Vault to wake up
-          docker compose exec -T api pytest tests/ -v
+          echo "Waiting for PostgreSQL..."
+          until docker compose exec -T db pg_isready -U postgres; do
+            sleep 2
+          done
+          echo "✓ PostgreSQL ready"
+
+      - name: Wait for Vault to be healthy
+        run: |
+          echo "Waiting for Vault..."
+          until docker compose exec -T vault vault status > /dev/null 2>&1; do
+            sleep 2
+          done
+          echo "✓ Vault ready"
+
+      - name: Run Vault init and wait for it to complete
+        run: |
+          docker compose up vault-init --exit-code-from vault-init
+          echo "✓ Vault init complete"
+
+      - name: Verify Vault secrets are populated
+        run: |
+          docker compose run --rm vault-test
+        # vault-test is the test service from your test-vault-init.sh
+        # Remove this step if you haven't added that service yet
+
+      - name: Start remaining services
+        run: docker compose up -d api scheduler storage pubsub adminer
+
+      - name: Wait for API to be healthy
+        run: |
+          echo "Waiting for API..."
+          until curl -sf http://localhost:3001/health > /dev/null 2>&1; do
+            echo "  ...API not ready yet"
+            sleep 3
+          done
+          echo "✓ API ready"
+        timeout-minutes: 2
+
+      - name: Run tests
+        run: docker compose exec -T api pytest tests/ -v --tb=short
+
+      - name: Print logs on failure
+        if: failure()
+        run: |
+          echo "========== API logs =========="
+          docker compose logs api
+          echo "========== Vault logs =========="
+          docker compose logs vault
+          echo "========== vault-init logs =========="
+          docker compose logs vault-init
+          echo "========== DB logs =========="
+          docker compose logs db
