@@ -11,6 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fix script permissions
+        run: |
+          chmod +x init-vault.sh
+          chmod +x test-vault-init.sh
+
       - name: Start core services (db + vault)
         run: docker compose up -d db vault
 
