@@ -1,12 +1,20 @@
 from fastapi import APIRouter
-from routes.auth  import router as auth
+from routes.auth import router as auth
 from routes.chat import router as chat
 from routes.health import router as health
 from routes.internal import router as internal
 from routes.reports import router as reports
 from routes.triage import router as triage
 from routes.users import router as users
-router =APIRouter()
+
+router = APIRouter()
+
+
+@router.get("/test")
+def test():
+    return "healthy"
+
+
 router.include_router(auth)
 router.include_router(chat)
 router.include_router(health)

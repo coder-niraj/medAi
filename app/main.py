@@ -74,6 +74,7 @@ fast_app.add_exception_handler(
 fast_app.add_exception_handler(Exception, global_exception_handler)
 
 fast_app.middleware("http")(audit_logger_middleware)
+
 fast_app.include_router(router)
 
 

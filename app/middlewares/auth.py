@@ -8,7 +8,6 @@ from models.user import User
 from repository.guest.index import GuestRepo
 from services.kms import KMSService
 from repository.audit.index import AuditRepo
-from DTOs.auditSchema import AuditDTO
 from services.audit.index import AuditService
 from helpers.audit_context import set_audit_state
 from helpers.msg import msg
