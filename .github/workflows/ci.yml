@@ -13,4 +13,4 @@ jobs:
         run: |
           docker compose up -d
           sleep 20 # Wait for pgvector and Vault to wake up
-          docker-compose exec -T api pytest tests/ -v
+          docker compose exec -T api pytest tests/ -v
