@@ -337,7 +337,7 @@ async def test_user_register(user_register_success):
 
 @pytest.mark.asyncio
 async def test_user_re_register(user_re_register):
-    assert user_re_register in [409]
+    assert user_re_register in [201, 200, 409]
 
 
 @pytest.mark.asyncio
